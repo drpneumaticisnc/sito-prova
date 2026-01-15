@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prenotazione - D.R. PNEUMATICI</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo">D.R. <span>PNEUMATICI</span></a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="index.html#chi-siamo">L'Officina</a>
+            <a href="prenotazione.html" class="active">Prenota</a>
+        </div>
+    </nav>
+
+    <header class="booking-header">
+        <div class="hero-content">
+            <h1>Prenota il tuo intervento</h1>
+            <p>Scegli il servizio e l'orario più comodo per te.</p>
+        </div>
+    </header>
+
+    <section id="prenotazione-wizard">
+        
+        <div class="booking-container" id="booking-form-container">
+            <form id="booking-form" novalidate>
+                
+                <h3 class="step-title">1. Servizio</h3>
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label>Tipo di Servizio</label>
+                        <select id="service-type" required>
+                            <option value="" disabled selected>Seleziona un servizio</option>
+                            <option value="Cambio Gomme">Cambio Gomme</option>
+                            <option value="Convergenza">Convergenza</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group half" style="margin-top: 35px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <label id="label-storage" style="display:flex; align-items:center; gap:10px; cursor:pointer; opacity: 0.5;">
+                                <input type="checkbox" id="storage-check" disabled>
+                                Ho le gomme in deposito da voi
+                            </label>
+                        </div>
+                        <small id="storage-hint" style="display:block; margin-left:25px; color:#888; font-size:0.8rem;">
+                            * Selezionabile solo con "Cambio Gomme"
+                        </small>
+                    </div>
+                </div>
+
+                <div id="storage-verification-form" style="display:none; background:#f0f8ff; padding:15px; border-radius:8px; border:1px solid #bde0fe; margin-bottom:15px;">
+                    <p style="margin:0 0 10px 0; font-size:0.9rem; font-weight:bold; color:#0a2342;">
+                        <i class="fas fa-search"></i> Verifica disponibilità magazzino:
+                    </p>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                        <input type="text" id="dep-nome" placeholder="Il tuo Nome" style="padding:10px; border:1px solid #ccc; border-radius:4px;">
+                        <input type="text" id="dep-cognome" placeholder="Il tuo Cognome" style="padding:10px; border:1px solid #ccc; border-radius:4px;">
+                    </div>
+                    
+                    <label style="font-size:0.8rem; font-weight:bold; color:#555;">Misura Gomme:</label>
+                    <input type="text" id="dep-misura" inputmode="numeric" pattern="[0-9]*" placeholder="Inserisci solo i numeri (es. 2055516)" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; margin-top:5px; margin-bottom: 8px;">
+                    <p style="font-size:0.75rem; color:#666; margin-bottom:10px;">Il sistema inserirà automaticamente barre e spazi.</p>
+
+                    <button type="button" id="btn-verifica-gomme" style="width:100%; background:#2ca5ff; color:white; border:none; padding:12px; border-radius:4px; cursor:pointer; font-weight:bold;">VERIFICA DISPONIBILITÀ</button>
+                    <p id="msg-verifica" style="font-size:0.9rem; margin-top:10px; font-weight:bold; min-height: 20px;"></p>
+                </div>
+
+                <h3 class="step-title">2. Data e Ora</h3>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="booking-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Orari Disponibili</label>
+                    <div id="slots-container" class="slots-grid">
+                        <p style="color:#666; font-style:italic;">Seleziona una data per vedere gli orari.</p>
+                    </div>
+                    <input type="hidden" id="selected-time">
+                </div>
+
+                <h3 class="step-title">3. I tuoi dati</h3>
+                <div class="form-row">
+                    <input type="text" id="nome" placeholder="Nome" required style="width:48%; padding: 15px; margin-right: 2%;">
+                    <input type="text" id="cognome" placeholder="Cognome" required style="width:48%; padding: 15px;">
+                </div>
+                
+                <div class="form-row">
+                    <div style="width:48%; margin-right: 2%;">
+                        <input type="email" id="email" placeholder="Email" required style="width:100%; padding: 15px;">
+                        <small class="error-text" id="err-email" style="display:none; color:red;">Email non valida</small>
+                    </div>
+                    <div style="width:48%;">
+                        <input type="tel" id="telefono" placeholder="Telefono" required style="width:100%; padding: 15px;">
+                        <small class="error-text" id="err-tel" style="display:none; color:red;">Inserire telefono valido</small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">CONFERMA PRENOTAZIONE</button>
+            </form>
+        </div>
+
+        <div id="receipt-container" style="display: none;">
+            <div class="receipt-card">
+                <div class="receipt-header">
+                    <img src="logo finale 2.png" alt="Logo DR" style="width: 80px; filter: brightness(0) invert(1); margin-bottom: 15px;">
+                    <h2>Prenotazione Confermata!</h2>
+                    <p>Ti aspettiamo in officina.</p>
+                </div>
+                <div class="receipt-body">
+                    <div class="receipt-row"><span>Cliente:</span> <strong id="rec-name"></strong></div>
+                    <div class="receipt-row"><span>Servizio:</span> <strong id="rec-service"></strong></div>
+                    <div class="receipt-row"><span>Deposito:</span> <strong id="rec-storage"></strong></div>
+                    <div class="receipt-row"><span>Data:</span> <strong id="rec-date" style="color:#2ca5ff; font-size:1.2rem;"></strong></div>
+                    <div class="receipt-row"><span>Ora:</span> <strong id="rec-time" style="color:#2ca5ff; font-size:1.2rem;"></strong></div>
+                    <p style="font-size:0.8rem; color:#888; margin-top:20px; text-align:center;">Email di riepilogo inviata a: <span id="rec-email"></span></p>
+                </div>
+                <button onclick="window.location.reload()" class="btn-new">Nuova Prenotazione</button>
+                <a href="index.html" class="btn-home">Torna alla Home</a>
+            </div>
+
+            <div class="receipt-help">
+                <p>Contatti:</p>
+                <div class="help-grid">
+                    <div class="help-item"><i class="fas fa-phone-alt"></i> <a href="tel:0883123456">0883 123456</a></div>
+                    <div class="help-item"><i class="fas fa-map-marker-alt"></i> <a href="https://www.google.com/maps/search/?api=1&query=D.R.+Pneumatici+Via+Corato+64+Andria" target="_blank">Via Corato, 64</a></div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
