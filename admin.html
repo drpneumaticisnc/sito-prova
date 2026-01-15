@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin System - D.R. PNEUMATICI</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root { --primary: #0a2342; --accent: #2ca5ff; --bg: #f4f6f8; --white: #fff; --text: #2d3436; --danger: #d63031; }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; color: var(--text); }
+
+        .nav-tabs { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; z-index: 900; padding-bottom: 5px; }
+        .tab-btn { flex: 1; border: none; background: none; padding: 12px; color: #999; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; }
+        .tab-btn i { font-size: 1.4rem; margin-bottom: 4px; }
+        .tab-btn.active { color: var(--primary); font-weight: bold; }
+
+        .header { background: white; padding: 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .view-section { display: none; padding: 15px; max-width: 900px; margin: 0 auto; }
+        .view-section.active { display: block; }
+
+        .date-nav { display: flex; align-items: center; justify-content: space-between; background: #e3f2fd; padding: 8px; border-radius: 10px; margin-bottom: 15px; }
+        .nav-arrow { background: white; border: none; width: 40px; height: 40px; border-radius: 8px; font-size: 1.2rem; color: var(--primary); cursor: pointer; }
+        .date-display { text-align: center; }
+        
+        .time-row { display: flex; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .time-col { width: 55px; font-weight: bold; color: #888; padding-top: 10px; }
+        .slots-area { flex: 1; display: flex; gap: 5px; overflow-x: auto; }
+        .slot { flex: 1; min-width: 120px; padding: 10px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
+        .slot.empty { border: 2px dashed #ddd; color: #aaa; text-align: center; }
+        .slot.client { background: #e3f2fd; border-left: 4px solid var(--accent); }
+        .slot.blocked { background: #ffebee; border-left: 4px solid var(--danger); }
+        .slot.manual { background: #fff3e0; border-left: 4px solid orange; }
+
+        .form-magazzino { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-add { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        .storage-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
+        .btn-del-item { background: #ffebee; color: var(--danger); border: none; padding: 8px; border-radius: 5px; cursor: pointer; }
+
+        .client-row { background: white; padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; }
+        #date-trigger { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <form class="login-box" onsubmit="event.preventDefault(); checkPass();">
+            <h3>Admin Login</h3>
+            <input type="password" id="admin-pass" placeholder="Password" style="margin-bottom:15px;">
+            <button type="submit" class="btn-add">ENTRA</button>
+        </form>
+    </div>
+
+    <div class="header">
+        <h2 id="page-title">Agenda</h2>
+        <button onclick="logout()" style="border:none; background:none; color:red; font-weight:bold;">Esci</button>
+    </div>
+
+    <div id="view-agenda" class="view-section active">
+        <div class="date-nav">
+            <button class="nav-arrow" onclick="changeDay(-1)"><i class="fas fa-chevron-left"></i></button>
+            <div class="date-display" onclick="document.getElementById('date-trigger').showPicker()">
+                <span id="day-name" style="display:block; font-size:0.8rem;">OGGI</span>
+                <strong id="full-date" style="font-size:1.1rem;">...</strong>
+                <input type="date" id="date-trigger" onchange="changeDate(this.value)">
+            </div>
+            <button class="nav-arrow" onclick="changeDay(1)"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div id="timeline-container">Caricamento...</div>
+    </div>
+
+    <div id="view-magazzino" class="view-section">
+        <div class="form-magazzino">
+            <h4 style="margin-top:0;">Nuovo Deposito Gomme</h4>
+            <div class="form-row">
+                <input type="text" id="mag-nome" placeholder="Nome Cliente">
+                <input type="text" id="mag-cognome" placeholder="Cognome">
+            </div>
+            <div class="form-row">
+                <input type="text" id="mag-misura" placeholder="Misura (scrivi solo numeri es: 2055516)">
+                <input type="text" id="mag-brand" placeholder="Marca">
+            </div>
+            <div class="form-row">
+                <select id="mag-stagione">
+                    <option value="Estive">Estive</option>
+                    <option value="Invernali">Invernali</option>
+                    <option value="4 Stagioni">4 Stagioni</option>
+                </select>
+                <input type="number" id="mag-qty" placeholder="Q.tà" value="4">
+            </div>
+            <textarea id="mag-note" placeholder="Info aggiuntive..." style="margin-bottom:10px;"></textarea>
+            <button class="btn-add" onclick="aggiungiGomme()">SALVA IN MAGAZZINO</button>
+        </div>
+        
+        <input type="text" id="search-mag" placeholder="🔍 Cerca cliente o misura (es 2055516)..." onkeyup="filtraMagazzino()" style="margin-bottom:15px;">
+        <div id="magazzino-list"></div>
+    </div>
+
+    <div id="view-clienti" class="view-section">
+        <input type="text" id="search-cli" placeholder="🔍 Cerca cliente..." onkeyup="filtraClienti()" style="margin-bottom:15px;">
+        <div id="clienti-list"></div>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('agenda')"><i class="far fa-calendar-alt"></i> Agenda</button>
+        <button class="tab-btn" onclick="switchTab('magazzino')"><i class="fas fa-boxes"></i> Magazzino</button>
+        <button class="tab-btn" onclick="switchTab('clienti')"><i class="fas fa-users"></i> Clienti</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "INSERISCI_API_KEY",
+            authDomain: "dr-pneumatici-app.firebaseapp.com",
+            projectId: "dr-pneumatici-app",
+            storageBucket: "dr-pneumatici-app.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentDate = new Date();
+
+        function checkPass() {
+            const p = document.getElementById('admin-pass').value;
+            if(p === "admin123") { document.getElementById('login-overlay').style.display='none'; goToToday(); } 
+            else alert("Errato");
+        }
+        function logout() { location.reload(); }
+
+        // --- FUNZIONE FORMATTAZIONE MISURA (Admin) ---
+        function formattaMisuraLive(inputElement) {
+            inputElement.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); 
+                let formatted = '';
+                if (value.length > 0) formatted += value.substring(0, 3);
+                if (value.length > 3) formatted += '/' + value.substring(3, 5);
+                if (value.length > 5) formatted += ' R' + value.substring(5, 7);
+                e.target.value = formatted;
+                
+                // Se siamo nel campo ricerca, filtra subito
+                if(inputElement.id === 'search-mag') filtraMagazzino();
+            });
+        }
+        
+        // Applica formattazione agli input admin
+        document.addEventListener('DOMContentLoaded', () => {
+            formattaMisuraLive(document.getElementById('mag-misura'));
+            formattaMisuraLive(document.getElementById('search-mag'));
+        });
+
+        // --- TABS & AGENDA ---
+        function switchTab(tab) {
+            document.querySelectorAll('.view-section, .tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-'+tab).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tab === 'magazzino') caricaMagazzino();
+            if(tab === 'clienti') caricaClienti();
+            const t = { agenda: "Agenda", magazzino: "Gestione Gomme", clienti: "Database Clienti" };
+            document.getElementById('page-title').innerText = t[tab];
+        }
+
+        function goToToday() {
+            const iso = new Date().toISOString().split('T')[0];
+            document.getElementById('date-trigger').value = iso;
+            changeDate(iso);
+        }
+        function changeDay(delta) {
+            let d = new Date(currentDate); d.setDate(d.getDate() + delta);
+            const iso = d.toISOString().split('T')[0];
+            document.getElementById('date-trigger').value = iso;
+            changeDate(iso);
+        }
+        function changeDate(iso) {
+            currentDate = new Date(iso);
+            document.getElementById('full-date').innerText = currentDate.toLocaleDateString('it-IT', {day:'numeric', month:'short'});
+            document.getElementById('day-name').innerText = currentDate.toLocaleDateString('it-IT', {weekday:'long'});
+            caricaAgenda(iso);
+        }
+
+        function caricaAgenda(iso) {
+            const cont = document.getElementById('timeline-container');
+            cont.innerHTML = "Caricamento...";
+            if(currentDate.getDay()===0) { cont.innerHTML="<h3 style='text-align:center;color:red;margin-top:30px'>CHIUSO</h3>"; return; }
+            
+            let orari = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"];
+            if(currentDate.getDay()===6) orari = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00"];
+
+            db.collection("prenotazioni").where("data", "==", iso).onSnapshot(snap => {
+                let data = [];
+                snap.forEach(d => data.push({id:d.id, ...d.data()}));
+                let html = "";
+                orari.forEach(ora => {
+                    const slots = data.filter(d => d.ora === ora);
+                    let slotsHtml = "";
+                    slots.forEach(s => {
+                        if(s.tipo === 'blocco') slotsHtml += `<div class="slot blocked" onclick="elimina('${s.id}')">CHIUSO</div>`;
+                        else slotsHtml += `<div class="slot client" onclick="elimina('${s.id}')"><b>${s.nome}</b><br>${s.servizio}</div>`;
+                    });
+                    for(let i=0; i<(2-slots.length); i++) slotsHtml += `<div class="slot empty" onclick="aggiungiManuale('${iso}','${ora}')">+</div>`;
+                    html += `<div class="time-row"><div class="time-col">${ora}</div><div class="slots-area">${slotsHtml}</div></div>`;
+                });
+                cont.innerHTML = html;
+            });
+        }
+
+        function aggiungiManuale(data, ora) {
+            const nome = prompt("Nome Cliente:");
+            if(!nome) return;
+            db.collection("prenotazioni").add({
+                data: data, ora: ora, nome: nome, cognome: "(Manuale)", servizio: "Cambio Gomme", 
+                tipo: 'manuale', timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        function elimina(id) { if(confirm("Eliminare?")) db.collection("prenotazioni").doc(id).delete(); }
+
+        // --- MAGAZZINO ---
+        function aggiungiGomme() {
+            const item = {
+                nome: document.getElementById('mag-nome').value.toLowerCase().trim(),
+                cognome: document.getElementById('mag-cognome').value.toLowerCase().trim(),
+                misura: document.getElementById('mag-misura').value.trim(), // Sarà già formattata
+                brand: document.getElementById('mag-brand').value,
+                stagione: document.getElementById('mag-stagione').value,
+                quantita: document.getElementById('mag-qty').value,
+                note: document.getElementById('mag-note').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            if(!item.nome || !item.misura) { alert("Dati mancanti"); return; }
+            db.collection("deposito").add(item).then(() => {
+                alert("Salvato!");
+                document.querySelectorAll('.form-magazzino input').forEach(i => i.value="");
+                caricaMagazzino();
+            });
+        }
+
+        function caricaMagazzino() {
+            const list = document.getElementById('magazzino-list');
+            list.innerHTML = "Loading...";
+            db.collection("deposito").orderBy("timestamp", "desc").get().then(snap => {
+                let html = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    html += `
+                        <div class="storage-item">
+                            <div>
+                                <h4 style="text-transform:capitalize">${d.nome} ${d.cognome}</h4>
+                                <small>${d.misura} - ${d.brand} (${d.stagione})</small>
+                            </div>
+                            <button class="btn-del-item" onclick="delItem('${doc.id}')"><i class="fas fa-trash"></i></button>
+                        </div>`;
+                });
+                list.innerHTML = html;
+            });
+        }
+        function delItem(id) { if(confirm("Eliminare?")) db.collection("deposito").doc(id).delete().then(caricaMagazzino); }
+        
+        function filtraMagazzino() {
+            const term = document.getElementById('search-mag').value.toLowerCase();
+            const items = document.querySelectorAll('.storage-item');
+            items.forEach(item => {
+                item.style.display = item.innerText.toLowerCase().includes(term) ? 'flex' : 'none';
+            });
+        }
+
+        // --- CLIENTI ---
+        function caricaClienti() {
+            db.collection("clienti").orderBy("cognome").get().then(snap => {
+                let html = "";
+                snap.forEach(doc => {
+                    const c = doc.data();
+                    html += `<div class="client-row"><div><b>${c.cognome} ${c.nome}</b><br><small>${c.telefono}</small></div><a href="tel:${c.telefono}">📞</a></div>`;
+                });
+                document.getElementById('clienti-list').innerHTML = html;
+            });
+        }
+        function filtraClienti() {
+            const term = document.getElementById('search-cli').value.toLowerCase();
+            document.querySelectorAll('.client-row').forEach(i => i.style.display = i.innerText.toLowerCase().includes(term) ? 'flex':'none');
+        }
+    </script>
+</body>
+</html>
