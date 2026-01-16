@@ -8,7 +8,7 @@ const firebaseConfig = {
   appId: "1:434776513276:web:52370fb79c6ab043319579"
 };
 
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBMIhduJVsOCHZils7HyN8uuZbzGSdOBudFBNR1hQzPbnw8zO2yNwtQ2NyVN7Glq3_Uw/exec"; 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzs-Cxcpa8DpOJWOYELLZZmaddmLlm5UUW-VM04uz1d8kPowXTSExyJkQ9VlLaX3Skp/exec"; 
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
