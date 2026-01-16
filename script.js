@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .get()
                 .then(snap => {
                     if (snap.empty) {
-                        msgVerifica.innerHTML = "❌ Cliente non trovato. Controlla il nome.";
+                        msgVerifica.innerHTML = "❌ Cliente non trovato. Controlla i dati oppure contatta l'officina.";
                         msgVerifica.style.color = "red";
                         isStorageVerified = false;
                         return;
