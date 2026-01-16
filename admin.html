@@ -7,113 +7,168 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        :root { --primary: #0a2342; --accent: #2ca5ff; --bg: #f4f6f8; --white: #fff; --text: #2d3436; --danger: #d63031; }
+        :root { --primary: #0a2342; --accent: #2ca5ff; --bg: #f4f6f8; --white: #fff; --text: #2d3436; --danger: #e74c3c; --success: #2ecc71; --warning: #f1c40f; }
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; color: var(--text); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: var(--text); }
 
-        .nav-tabs { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; z-index: 900; padding-bottom: 5px; }
-        .tab-btn { flex: 1; border: none; background: none; padding: 12px; color: #999; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; }
-        .tab-btn i { font-size: 1.4rem; margin-bottom: 4px; }
-        .tab-btn.active { color: var(--primary); font-weight: bold; }
+        /* HEADER */
+        .header { background: var(--primary); color: white; padding: 15px 20px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header h2 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
 
-        .header { background: white; padding: 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .view-section { display: none; padding: 15px; max-width: 900px; margin: 0 auto; }
+        /* NAVIGAZIONE */
+        .nav-tabs { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; z-index: 900; height: 70px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .tab-btn { flex: 1; border: none; background: none; color: #999; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s; }
+        .tab-btn i { font-size: 1.4rem; margin-bottom: 5px; }
+        .tab-btn.active { color: var(--primary); font-weight: 800; background: #f0f8ff; }
+
+        /* SEZIONI */
+        .view-section { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; }
         .view-section.active { display: block; }
 
-        .date-nav { display: flex; align-items: center; justify-content: space-between; background: #e3f2fd; padding: 8px; border-radius: 10px; margin-bottom: 15px; }
-        .nav-arrow { background: white; border: none; width: 40px; height: 40px; border-radius: 8px; font-size: 1.2rem; color: var(--primary); cursor: pointer; }
-        .date-display { text-align: center; }
+        /* --- AGENDA --- */
+        .date-nav { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .nav-arrow { background: var(--concrete-grey); border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        .time-row { display: flex; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .time-col { width: 55px; font-weight: bold; color: #888; padding-top: 10px; }
-        .slots-area { flex: 1; display: flex; gap: 5px; overflow-x: auto; }
-        .slot { flex: 1; min-width: 120px; padding: 10px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
-        .slot.empty { border: 2px dashed #ddd; color: #aaa; text-align: center; }
-        .slot.client { background: #e3f2fd; border-left: 4px solid var(--accent); }
-        .slot.blocked { background: #ffebee; border-left: 4px solid var(--danger); }
-        .slot.manual { background: #fff3e0; border-left: 4px solid orange; }
+        .time-row { display: flex; margin-bottom: 12px; align-items: center; }
+        .time-col { width: 50px; font-weight: 700; color: #888; font-size: 0.9rem; }
+        .slots-area { flex: 1; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
+        
+        .slot { 
+            flex: 1; min-width: 140px; padding: 10px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; display: flex; flex-direction: column; justify-content: center;
+            overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+        }
+        .slot:active { transform: scale(0.98); }
+        .slot.empty { background: white; border: 2px dashed #ddd; color: #aaa; align-items: center; }
+        .slot.client { background: #e3f2fd; border-left: 5px solid var(--accent); color: var(--primary); }
+        .slot.blocked { background: #ffebee; border-left: 5px solid var(--danger); color: var(--danger); font-weight: bold; }
+        .slot.manual { background: #fff3e0; border-left: 5px solid var(--warning); color: #d35400; }
 
-        .form-magazzino { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-        .btn-add { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        
-        .storage-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; }
-        .btn-del-item { background: #ffebee; color: var(--danger); border: none; padding: 8px; border-radius: 5px; cursor: pointer; }
+        /* Deposito Tag */
+        .dep-tag { font-size: 0.7rem; font-weight: bold; padding: 2px 4px; border-radius: 4px; margin-top: 3px; display: inline-block; width: fit-content; }
+        .dep-yes { background: var(--primary); color: white; }
+        .dep-no { background: #ddd; color: #666; }
 
-        .client-row { background: white; padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        /* --- RICERCA MAGAZZINO (SPLIT) --- */
+        .search-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .search-container { position: relative; }
+        .search-container input { width: 100%; padding: 12px 12px 12px 35px; border: none; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9rem; }
+        .search-container i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #aaa; }
+
+        /* --- MAGAZZINO & LISTE --- */
+        .fab-add { position: fixed; bottom: 90px; right: 20px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 4px 15px rgba(44, 165, 255, 0.4); border: none; cursor: pointer; z-index: 800; }
         
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; }
-        #date-trigger { position: absolute; opacity: 0; width: 1px; height: 1px; }
+        .item-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border-left: 5px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+        .item-card.magazzino { border-left-color: var(--warning); }
+        
+        .item-info h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 1rem; text-transform: capitalize; }
+        .item-info p { margin: 0; color: #666; font-size: 0.85rem; }
+        .item-actions { display: flex; gap: 10px; }
+        .action-btn { width: 35px; height: 35px; border-radius: 8px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; }
+        .btn-edit { background: var(--accent); }
+        .btn-del { background: #ff7675; }
+
+        /* --- TABELLA CLIENTI --- */
+        .table-responsive { overflow-x: auto; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background: #f8f9fa; color: #666; padding: 12px; text-align: left; font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 12px; border-top: 1px solid #eee; font-size: 0.9rem; color: #333; }
+        
+        /* LOGIN */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .login-box input { padding: 15px; border-radius: 5px; border: none; margin-bottom: 10px; width: 250px; text-align: center; }
+        .login-box button { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; width: 250px; }
+        
+        #date-trigger { position: absolute; opacity: 0; width: 1px; height: 1px; bottom: 0; left: 0; }
     </style>
 </head>
 <body>
 
     <div id="login-overlay">
-        <form class="login-box" onsubmit="event.preventDefault(); checkPass();">
-            <h3>Admin Login</h3>
-            <input type="password" id="admin-pass" placeholder="Password" style="margin-bottom:15px;">
-            <button type="submit" class="btn-add">ENTRA</button>
-        </form>
+        <h2 style="color:white; margin-bottom:20px;">Admin System</h2>
+        <div class="login-box">
+            <form onsubmit="event.preventDefault(); checkPass();">
+                <input type="password" id="admin-pass" placeholder="Codice Accesso">
+                <br>
+                <button type="submit">ENTRA</button>
+            </form>
+        </div>
     </div>
 
     <div class="header">
-        <h2 id="page-title">Agenda</h2>
-        <button onclick="logout()" style="border:none; background:none; color:red; font-weight:bold;">Esci</button>
+        <h2 id="page-title">AGENDA</h2>
+        <button class="logout-btn" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i></button>
     </div>
 
     <div id="view-agenda" class="view-section active">
         <div class="date-nav">
             <button class="nav-arrow" onclick="changeDay(-1)"><i class="fas fa-chevron-left"></i></button>
             <div class="date-display" onclick="document.getElementById('date-trigger').showPicker()">
-                <span id="day-name" style="display:block; font-size:0.8rem;">OGGI</span>
-                <strong id="full-date" style="font-size:1.1rem;">...</strong>
+                <span id="day-name" style="display:block; font-size:0.75rem; color:#888; text-transform:uppercase;">OGGI</span>
+                <strong id="full-date" style="font-size:1.1rem; color:var(--primary);">...</strong>
                 <input type="date" id="date-trigger" onchange="changeDate(this.value)">
             </div>
+            <button class="nav-arrow" onclick="toggleBloccoGiornata()" style="color:var(--danger);" title="Blocca/Sblocca Intera Giornata">
+                <i class="fas fa-lock"></i>
+            </button>
             <button class="nav-arrow" onclick="changeDay(1)"><i class="fas fa-chevron-right"></i></button>
         </div>
-        <div id="timeline-container">Caricamento...</div>
+        
+        <div id="timeline-container">
+            <p style="text-align:center; margin-top:50px;">Caricamento...</p>
+        </div>
     </div>
 
     <div id="view-magazzino" class="view-section">
-        <div class="form-magazzino">
-            <h4 style="margin-top:0;">Nuovo Deposito Gomme</h4>
-            <div class="form-row">
-                <input type="text" id="mag-nome" placeholder="Nome Cliente">
-                <input type="text" id="mag-cognome" placeholder="Cognome">
+        <div class="search-split">
+            <div class="search-container">
+                <i class="fas fa-user"></i>
+                <input type="text" id="search-mag-cli" placeholder="Cerca Cliente..." onkeyup="filtraMagazzino()">
             </div>
-            <div class="form-row">
-                <input type="text" id="mag-misura" placeholder="Misura (scrivi solo numeri es: 2055516)">
-                <input type="text" id="mag-brand" placeholder="Marca">
+            <div class="search-container">
+                <i class="fas fa-ruler"></i>
+                <input type="text" id="search-mag-mis" placeholder="Misura (es 2055516)..." onkeyup="filtraMagazzino()">
             </div>
-            <div class="form-row">
-                <select id="mag-stagione">
-                    <option value="Estive">Estive</option>
-                    <option value="Invernali">Invernali</option>
-                    <option value="4 Stagioni">4 Stagioni</option>
-                </select>
-                <input type="number" id="mag-qty" placeholder="Q.tà" value="4">
-            </div>
-            <textarea id="mag-note" placeholder="Info aggiuntive..." style="margin-bottom:10px;"></textarea>
-            <button class="btn-add" onclick="aggiungiGomme()">SALVA IN MAGAZZINO</button>
         </div>
-        
-        <input type="text" id="search-mag" placeholder="🔍 Cerca cliente o misura (es 2055516)..." onkeyup="filtraMagazzino()" style="margin-bottom:15px;">
+
         <div id="magazzino-list"></div>
+        <button class="fab-add" onclick="openModalMagazzino()"><i class="fas fa-plus"></i></button>
     </div>
 
     <div id="view-clienti" class="view-section">
-        <input type="text" id="search-cli" placeholder="🔍 Cerca cliente..." onkeyup="filtraClienti()" style="margin-bottom:15px;">
-        <div id="clienti-list"></div>
+        <div class="search-container" style="margin-bottom:20px;">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-cli" placeholder="Cerca Cliente per nome o email..." onkeyup="filtraClienti()">
+        </div>
+        <div class="table-responsive">
+            <table id="clienti-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Email</th>
+                        <th>Telefono</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="clienti-tbody"></tbody>
+            </table>
+        </div>
     </div>
 
     <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('agenda')"><i class="far fa-calendar-alt"></i> Agenda</button>
-        <button class="tab-btn" onclick="switchTab('magazzino')"><i class="fas fa-boxes"></i> Magazzino</button>
-        <button class="tab-btn" onclick="switchTab('clienti')"><i class="fas fa-users"></i> Clienti</button>
+        <button class="tab-btn active" onclick="switchTab('agenda')">
+            <i class="far fa-calendar-alt"></i> Agenda
+        </button>
+        <button class="tab-btn" onclick="switchTab('magazzino')">
+            <i class="fas fa-boxes"></i> Magazzino
+        </button>
+        <button class="tab-btn" onclick="switchTab('clienti')">
+            <i class="fas fa-users"></i> Clienti
+        </button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -121,7 +176,7 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "INSERISCI_API_KEY",
+            apiKey: "AIzaSyD_suC0f5BdE-ZDV3idkZ-0HPlIjEt6DTU",
             authDomain: "dr-pneumatici-app.firebaseapp.com",
             projectId: "dr-pneumatici-app",
             storageBucket: "dr-pneumatici-app.appspot.com",
@@ -132,15 +187,17 @@
         const db = firebase.firestore();
 
         let currentDate = new Date();
-
+        
         function checkPass() {
-            const p = document.getElementById('admin-pass').value;
-            if(p === "admin123") { document.getElementById('login-overlay').style.display='none'; goToToday(); } 
-            else alert("Errato");
+            if(document.getElementById('admin-pass').value === "admin123") {
+                document.getElementById('login-overlay').style.display = 'none';
+                goToToday();
+            } else {
+                Swal.fire({icon: 'error', title: 'Errore', text: 'Password sbagliata', timer: 1500, showConfirmButton: false});
+            }
         }
-        function logout() { location.reload(); }
 
-        // --- FUNZIONE FORMATTAZIONE MISURA (Admin) ---
+        // --- FORMATTAZIONE AUTOMATICA MISURA ---
         function formattaMisuraLive(inputElement) {
             inputElement.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, ''); 
@@ -150,28 +207,28 @@
                 if (value.length > 5) formatted += ' R' + value.substring(5, 7);
                 e.target.value = formatted;
                 
-                // Se siamo nel campo ricerca, filtra subito
-                if(inputElement.id === 'search-mag') filtraMagazzino();
+                // Aggiorna filtro se è un campo di ricerca
+                if(inputElement.id.includes('search')) filtraMagazzino();
             });
         }
         
-        // Applica formattazione agli input admin
         document.addEventListener('DOMContentLoaded', () => {
-            formattaMisuraLive(document.getElementById('mag-misura'));
-            formattaMisuraLive(document.getElementById('search-mag'));
+            formattaMisuraLive(document.getElementById('search-mag-mis'));
         });
 
-        // --- TABS & AGENDA ---
+        // --- NAVIGAZIONE ---
         function switchTab(tab) {
-            document.querySelectorAll('.view-section, .tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById('view-'+tab).classList.add('active');
             event.currentTarget.classList.add('active');
+            document.getElementById('page-title').innerText = tab.toUpperCase();
+
             if(tab === 'magazzino') caricaMagazzino();
             if(tab === 'clienti') caricaClienti();
-            const t = { agenda: "Agenda", magazzino: "Gestione Gomme", clienti: "Database Clienti" };
-            document.getElementById('page-title').innerText = t[tab];
         }
 
+        // --- 1. AGENDA ---
         function goToToday() {
             const iso = new Date().toISOString().split('T')[0];
             document.getElementById('date-trigger').value = iso;
@@ -185,111 +242,335 @@
         }
         function changeDate(iso) {
             currentDate = new Date(iso);
-            document.getElementById('full-date').innerText = currentDate.toLocaleDateString('it-IT', {day:'numeric', month:'short'});
+            const opts = { weekday: 'long', day: 'numeric', month: 'short' };
+            document.getElementById('full-date').innerText = currentDate.toLocaleDateString('it-IT', opts);
             document.getElementById('day-name').innerText = currentDate.toLocaleDateString('it-IT', {weekday:'long'});
             caricaAgenda(iso);
         }
 
         function caricaAgenda(iso) {
-            const cont = document.getElementById('timeline-container');
-            cont.innerHTML = "Caricamento...";
-            if(currentDate.getDay()===0) { cont.innerHTML="<h3 style='text-align:center;color:red;margin-top:30px'>CHIUSO</h3>"; return; }
+            const container = document.getElementById('timeline-container');
+            container.innerHTML = '<p style="text-align:center; margin-top:20px;">Caricamento...</p>';
             
-            let orari = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"];
-            if(currentDate.getDay()===6) orari = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00"];
+            const day = currentDate.getDay();
+            if(day === 0) { container.innerHTML = "<h3 style='text-align:center; margin-top:50px; color:red;'>DOMENICA CHIUSO</h3>"; return; }
+            
+            let orari = (day === 6) 
+                ? ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00"]
+                : ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"];
 
             db.collection("prenotazioni").where("data", "==", iso).onSnapshot(snap => {
-                let data = [];
-                snap.forEach(d => data.push({id:d.id, ...d.data()}));
+                let list = [];
+                snap.forEach(doc => list.push({id: doc.id, ...doc.data()}));
+
                 let html = "";
                 orari.forEach(ora => {
-                    const slots = data.filter(d => d.ora === ora);
+                    const slots = list.filter(p => p.ora === ora);
                     let slotsHtml = "";
-                    slots.forEach(s => {
-                        if(s.tipo === 'blocco') slotsHtml += `<div class="slot blocked" onclick="elimina('${s.id}')">CHIUSO</div>`;
-                        else slotsHtml += `<div class="slot client" onclick="elimina('${s.id}')"><b>${s.nome}</b><br>${s.servizio}</div>`;
+
+                    slots.forEach(p => {
+                        let classe = p.tipo === 'blocco' ? 'blocked' : (p.tipo === 'manuale' ? 'manual' : 'client');
+                        let depositoBadge = p.deposito ? '<span class="dep-tag dep-yes">DEP: SI</span>' : '<span class="dep-tag dep-no">DEP: NO</span>';
+                        if(p.tipo === 'blocco') depositoBadge = ''; 
+
+                        let contenuto = p.tipo === 'blocco' ? '<i class="fas fa-lock"></i> CHIUSO' : `<b>${p.cognome} ${p.nome}</b><br>${depositoBadge}`;
+                        
+                        // TOOLTIP COMPLETO
+                        let tooltip = `Cliente: ${p.nome} ${p.cognome}\nTel: ${p.telefono}\nEmail: ${p.email}\nServizio: ${p.servizio}\nDeposito: ${p.deposito?'SI':'NO'}`;
+                        if(p.tipo==='blocco') tooltip = "Orario Bloccato";
+
+                        slotsHtml += `<div class="slot ${classe}" title="${tooltip}" onclick="gestisciOccupato('${p.id}', '${p.tipo}', '${p.cognome}')">${contenuto}</div>`;
                     });
-                    for(let i=0; i<(2-slots.length); i++) slotsHtml += `<div class="slot empty" onclick="aggiungiManuale('${iso}','${ora}')">+</div>`;
+
+                    // Slot vuoti (Max 2)
+                    for(let i=0; i < (2 - slots.length); i++) {
+                        slotsHtml += `<div class="slot empty" onclick="gestisciVuoto('${iso}', '${ora}')"><i class="fas fa-plus"></i></div>`;
+                    }
+
                     html += `<div class="time-row"><div class="time-col">${ora}</div><div class="slots-area">${slotsHtml}</div></div>`;
                 });
-                cont.innerHTML = html;
+                container.innerHTML = html;
             });
         }
 
-        function aggiungiManuale(data, ora) {
-            const nome = prompt("Nome Cliente:");
-            if(!nome) return;
-            db.collection("prenotazioni").add({
-                data: data, ora: ora, nome: nome, cognome: "(Manuale)", servizio: "Cambio Gomme", 
-                tipo: 'manuale', timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        // CLICK SU SLOT VUOTO -> Redirect o Blocco Singolo
+        function gestisciVuoto(data, ora) {
+            Swal.fire({
+                title: `Ore ${ora}`,
+                text: "Scegli azione:",
+                icon: 'question',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Prenota (Sito)',
+                denyButtonText: 'Blocca Orario',
+                cancelButtonText: 'Chiudi',
+                confirmButtonColor: '#2ca5ff',
+                denyButtonColor: '#e74c3c'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Apre prenotazione in nuova scheda per compilare tutto
+                    window.open('prenotazione.html', '_blank');
+                } else if (result.isDenied) {
+                    db.collection("prenotazioni").add({
+                        data: data, ora: ora, tipo: 'blocco', 
+                        nome: 'BLOCCO', cognome: 'ADMIN', servizio: 'Non disp.',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
             });
         }
-        function elimina(id) { if(confirm("Eliminare?")) db.collection("prenotazioni").doc(id).delete(); }
 
-        // --- MAGAZZINO ---
-        function aggiungiGomme() {
-            const item = {
-                nome: document.getElementById('mag-nome').value.toLowerCase().trim(),
-                cognome: document.getElementById('mag-cognome').value.toLowerCase().trim(),
-                misura: document.getElementById('mag-misura').value.trim(), // Sarà già formattata
-                brand: document.getElementById('mag-brand').value,
-                stagione: document.getElementById('mag-stagione').value,
-                quantita: document.getElementById('mag-qty').value,
-                note: document.getElementById('mag-note').value,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            if(!item.nome || !item.misura) { alert("Dati mancanti"); return; }
-            db.collection("deposito").add(item).then(() => {
-                alert("Salvato!");
-                document.querySelectorAll('.form-magazzino input').forEach(i => i.value="");
-                caricaMagazzino();
+        // CLICK SU SLOT OCCUPATO
+        function gestisciOccupato(id, tipo, cognome) {
+            let msg = tipo==='blocco' ? "Sbloccare questo orario?" : `Eliminare prenotazione di ${cognome}?`;
+            Swal.fire({
+                title: 'Attenzione', text: msg, icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sì, elimina'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    db.collection("prenotazioni").doc(id).delete();
+                    Swal.fire('Eliminato', '', 'success');
+                }
             });
         }
+
+        // BLOCCA / SBLOCCA INTERA GIORNATA
+        function toggleBloccoGiornata() {
+            const iso = document.getElementById('date-trigger').value;
+            Swal.fire({
+                title: 'Gestione Giornata',
+                text: "Vuoi bloccare tutti gli slot vuoti o sbloccare tutto?",
+                icon: 'warning',
+                showDenyButton: true,
+                showCancelButton: true,
+                confirmButtonText: '🔒 BLOCCA TUTTO',
+                denyButtonText: '🔓 SBLOCCA TUTTO',
+                cancelButtonText: 'Annulla'
+            }).then((res) => {
+                if(res.isConfirmed) { // BLOCCA
+                    const day = new Date(iso).getDay();
+                    let orari = (day===6) ? ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00"] 
+                                          : ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30"];
+                    
+                    // Recupera già presenti per non duplicare
+                    db.collection("prenotazioni").where("data", "==", iso).get().then(snap => {
+                        let batch = db.batch();
+                        // Conta quanti slot occupati per ogni orario
+                        let counts = {};
+                        snap.forEach(doc => { let h = doc.data().ora; counts[h] = (counts[h]||0)+1; });
+
+                        orari.forEach(ora => {
+                            let presenti = counts[ora] || 0;
+                            // Se ci sono meno di 2 prenotazioni, aggiungi blocchi finché non diventano 2
+                            for(let i=presenti; i<2; i++) {
+                                let ref = db.collection("prenotazioni").doc();
+                                batch.set(ref, {
+                                    data: iso, ora: ora, tipo: 'blocco', nome: 'CHIUSO', cognome: 'GIORNATA',
+                                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                            }
+                        });
+                        batch.commit().then(() => Swal.fire('Giornata Bloccata', '', 'success'));
+                    });
+
+                } else if (res.isDenied) { // SBLOCCA (Rimuove solo i blocchi)
+                    db.collection("prenotazioni").where("data", "==", iso).where("tipo", "==", "blocco").get()
+                    .then(snap => {
+                        let batch = db.batch();
+                        snap.forEach(doc => batch.delete(doc.ref));
+                        return batch.commit();
+                    }).then(() => Swal.fire('Giornata Sbloccata', 'I blocchi manuali sono stati rimossi.', 'success'));
+                }
+            });
+        }
+
+
+        // --- 2. MAGAZZINO (CRUD Completo) ---
+        let allMagazzino = [];
 
         function caricaMagazzino() {
-            const list = document.getElementById('magazzino-list');
-            list.innerHTML = "Loading...";
+            document.getElementById('magazzino-list').innerHTML = '<p style="text-align:center;">Caricamento...</p>';
             db.collection("deposito").orderBy("timestamp", "desc").get().then(snap => {
-                let html = "";
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    html += `
-                        <div class="storage-item">
-                            <div>
-                                <h4 style="text-transform:capitalize">${d.nome} ${d.cognome}</h4>
-                                <small>${d.misura} - ${d.brand} (${d.stagione})</small>
-                            </div>
-                            <button class="btn-del-item" onclick="delItem('${doc.id}')"><i class="fas fa-trash"></i></button>
-                        </div>`;
-                });
-                list.innerHTML = html;
-            });
-        }
-        function delItem(id) { if(confirm("Eliminare?")) db.collection("deposito").doc(id).delete().then(caricaMagazzino); }
-        
-        function filtraMagazzino() {
-            const term = document.getElementById('search-mag').value.toLowerCase();
-            const items = document.querySelectorAll('.storage-item');
-            items.forEach(item => {
-                item.style.display = item.innerText.toLowerCase().includes(term) ? 'flex' : 'none';
+                allMagazzino = [];
+                snap.forEach(d => allMagazzino.push({id: d.id, ...d.data()}));
+                renderMagazzino(allMagazzino);
             });
         }
 
-        // --- CLIENTI ---
-        function caricaClienti() {
-            db.collection("clienti").orderBy("cognome").get().then(snap => {
-                let html = "";
-                snap.forEach(doc => {
-                    const c = doc.data();
-                    html += `<div class="client-row"><div><b>${c.cognome} ${c.nome}</b><br><small>${c.telefono}</small></div><a href="tel:${c.telefono}">📞</a></div>`;
+        function renderMagazzino(list) {
+            const container = document.getElementById('magazzino-list');
+            let html = "";
+            list.forEach(item => {
+                let itemStr = encodeURIComponent(JSON.stringify(item));
+                html += `
+                    <div class="item-card magazzino">
+                        <div class="item-info">
+                            <h4>${item.cognome} ${item.nome}</h4>
+                            <p><b>${item.misura}</b> • ${item.brand}</p>
+                            <p>${item.stagione} (Qta: ${item.quantita})</p>
+                            <p style="font-size:0.75rem; color:#999;">${item.note || ''}</p>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-btn btn-edit" onclick="openModalMagazzino('${itemStr}')"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn btn-del" onclick="eliminaItem('deposito','${item.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html || '<p style="text-align:center; color:#999;">Nessuna gomma trovata.</p>';
+        }
+
+        function filtraMagazzino() {
+            const cli = document.getElementById('search-mag-cli').value.toLowerCase();
+            const mis = document.getElementById('search-mag-mis').value.toLowerCase(); // Già formattato
+            
+            const filtered = allMagazzino.filter(item => {
+                const matchNome = (item.nome + " " + item.cognome).toLowerCase().includes(cli);
+                // Rimuoviamo spazi per ricerca misura più flessibile
+                const dbMisura = item.misura.replace(/\s/g, '').toLowerCase();
+                const searchMisura = mis.replace(/\s/g, '').toLowerCase();
+                const matchMisura = dbMisura.includes(searchMisura);
+
+                return matchNome && matchMisura;
+            });
+            renderMagazzino(filtered);
+        }
+
+        async function openModalMagazzino(itemEncoded = null) {
+            let item = itemEncoded ? JSON.parse(decodeURIComponent(itemEncoded)) : null;
+            let isEdit = !!item;
+
+            const { value: formValues } = await Swal.fire({
+                title: isEdit ? 'Modifica Gomme' : 'Nuovo Deposito',
+                html: `
+                    <input id="sw-nome" class="swal2-input" placeholder="Nome" value="${item ? item.nome : ''}">
+                    <input id="sw-cognome" class="swal2-input" placeholder="Cognome" value="${item ? item.cognome : ''}">
+                    <input id="sw-misura" class="swal2-input" placeholder="Misura (es 2055516)" value="${item ? item.misura : ''}">
+                    <input id="sw-brand" class="swal2-input" placeholder="Marca" value="${item ? item.brand : ''}">
+                    <select id="sw-stagione" class="swal2-input">
+                        <option value="Null">Seleziona stagione</option>
+                        <option value="Estive" ${item && item.stagione==='Estive'?'selected':''}>Estive</option>
+                        <option value="Invernali" ${item && item.stagione==='Invernali'?'selected':''}>Invernali</option>
+                        <option value="4 Stagioni" ${item && item.stagione==='4 Stagioni'?'selected':''}>4 Stagioni</option>
+                    </select>
+                    <input id="sw-qty" type="number" class="swal2-input" placeholder="Quantità" value="${item ? item.quantita : 4}">
+                    <input id="sw-note" class="swal2-input" placeholder="Note (facoltativo)" value="${item ? item.note : ''}">
+                `,
+                focusConfirm: false,
+                didOpen: () => {
+                    const inp = document.getElementById('sw-misura');
+                    formattaMisuraLive(inp); // Applica formattazione live
+                },
+                preConfirm: () => {
+                    return {
+                        nome: document.getElementById('sw-nome').value.toLowerCase(),
+                        cognome: document.getElementById('sw-cognome').value.toLowerCase(),
+                        misura: document.getElementById('sw-misura').value,
+                        brand: document.getElementById('sw-brand').value,
+                        stagione: document.getElementById('sw-stagione').value,
+                        quantita: document.getElementById('sw-qty').value,
+                        note: document.getElementById('sw-note').value,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }
+                }
+            });
+
+            if (formValues) {
+                if(!formValues.nome || !formValues.misura) { Swal.fire('Errore', 'Nome e Misura obbligatori', 'error'); return; }
+                
+                let promise = isEdit ? db.collection("deposito").doc(item.id).update(formValues) 
+                                     : db.collection("deposito").add(formValues);
+                
+                promise.then(() => {
+                    Swal.fire('Salvato!', '', 'success');
+                    caricaMagazzino();
                 });
-                document.getElementById('clienti-list').innerHTML = html;
+            }
+        }
+
+        // --- 3. CLIENTI (Modifica Totale) ---
+        let allClienti = [];
+        
+        function caricaClienti() {
+            document.getElementById('clienti-tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">Caricamento...</td></tr>';
+            db.collection("clienti").orderBy("cognome").get().then(snap => {
+                allClienti = [];
+                snap.forEach(d => allClienti.push({id: d.id, ...d.data()}));
+                renderClienti(allClienti);
             });
         }
-        function filtraClienti() {
-            const term = document.getElementById('search-cli').value.toLowerCase();
-            document.querySelectorAll('.client-row').forEach(i => i.style.display = i.innerText.toLowerCase().includes(term) ? 'flex':'none');
+
+        function renderClienti(list) {
+            const tbody = document.getElementById('clienti-tbody');
+            let html = "";
+            list.forEach(c => {
+                let cStr = encodeURIComponent(JSON.stringify(c));
+                html += `
+                    <tr>
+                        <td><b>${c.cognome}</b> ${c.nome}</td>
+                        <td>${c.email}</td>
+                        <td>${c.telefono}</td>
+                        <td>
+                            <button class="action-btn btn-edit" onclick="modificaCliente('${cStr}')"><i class="fas fa-pen"></i></button>
+                            <button class="action-btn btn-del" onclick="eliminaItem('clienti','${c.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;">Nessun cliente.</td></tr>';
         }
+
+        function filtraClienti() {
+            const t = document.getElementById('search-cli').value.toLowerCase();
+            const res = allClienti.filter(c => (c.nome+" "+c.cognome).toLowerCase().includes(t) || c.email.includes(t));
+            renderClienti(res);
+        }
+
+        async function modificaCliente(cEncoded) {
+            const c = JSON.parse(decodeURIComponent(cEncoded));
+            const { value: formValues } = await Swal.fire({
+                title: 'Modifica Cliente',
+                html: `
+                    <label>Nome</label><input id="cl-nome" class="swal2-input" value="${c.nome}">
+                    <label>Cognome</label><input id="cl-cognome" class="swal2-input" value="${c.cognome}">
+                    <label>Email</label><input id="cl-email" class="swal2-input" value="${c.email}">
+                    <label>Telefono</label><input id="cl-tel" class="swal2-input" value="${c.telefono}">
+                `,
+                focusConfirm: false,
+                preConfirm: () => {
+                    return {
+                        nome: document.getElementById('cl-nome').value,
+                        cognome: document.getElementById('cl-cognome').value,
+                        email: document.getElementById('cl-email').value,
+                        telefono: document.getElementById('cl-tel').value
+                    }
+                }
+            });
+
+            if (formValues) {
+                // Attenzione: Se l'ID è l'email e l'email cambia, dovremmo creare un nuovo doc e cancellare il vecchio.
+                // Per sicurezza qui aggiorno solo i campi.
+                db.collection("clienti").doc(c.id).update(formValues).then(() => {
+                    Swal.fire('Cliente Aggiornato', '', 'success');
+                    caricaClienti();
+                });
+            }
+        }
+
+        // Eliminazione Generica
+        function eliminaItem(coll, id) {
+            Swal.fire({
+                title: 'Sei sicuro?', text: "Non potrai annullare questa azione!", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Elimina'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    db.collection(coll).doc(id).delete().then(() => {
+                        Swal.fire('Eliminato!', '', 'success');
+                        if(coll==='deposito') caricaMagazzino();
+                        if(coll==='clienti') caricaClienti();
+                    });
+                }
+            });
+        }
+
     </script>
 </body>
 </html>
