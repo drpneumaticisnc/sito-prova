@@ -43,7 +43,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group half" style="margin-top: 35px;">
+                    <div class="form-group half checkbox-group" style="margin-top: 5px;">
                         <div style="display:flex; align-items:center; gap:10px;">
                             <label id="label-storage" style="display:flex; align-items:center; gap:10px; cursor:pointer; opacity: 0.5;">
                                 <input type="checkbox" id="storage-check" disabled>
@@ -60,13 +60,17 @@
                     <p style="margin:0 0 10px 0; font-size:0.9rem; font-weight:bold; color:#0a2342;">
                         <i class="fas fa-search"></i> Verifica disponibilità magazzino:
                     </p>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
-                        <input type="text" id="dep-nome" placeholder="Il tuo Nome" style="padding:10px; border:1px solid #ccc; border-radius:4px;">
-                        <input type="text" id="dep-cognome" placeholder="Il tuo Cognome" style="padding:10px; border:1px solid #ccc; border-radius:4px;">
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <input type="text" id="dep-nome" placeholder="Nome">
+                        </div>
+                        <div class="form-group half">
+                            <input type="text" id="dep-cognome" placeholder="Cognome">
+                        </div>
                     </div>
                     
-                    <label style="font-size:0.8rem; font-weight:bold; color:#555;">Misura Gomme:</label>
-                    <input type="text" id="dep-misura" inputmode="numeric" pattern="[0-9]*" placeholder="Inserisci solo i numeri (es. 2055516)" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px; margin-top:5px; margin-bottom: 8px;">
+                    <label style="font-size:0.8rem; font-weight:bold; color:#555;">Misura Pneumatici:</label>
+                    <input type="text" id="dep-misura" inputmode="numeric" pattern="[0-9]*" placeholder="Misura Pneumatici (es. 2055516)" style="margin-top:5px; margin-bottom: 8px;">
                     <p style="font-size:0.75rem; color:#666; margin-bottom:10px;">Il sistema inserirà automaticamente barre e spazi.</p>
 
                     <button type="button" id="btn-verifica-gomme" style="width:100%; background:#2ca5ff; color:white; border:none; padding:12px; border-radius:4px; cursor:pointer; font-weight:bold;">VERIFICA DISPONIBILITÀ</button>
@@ -88,17 +92,21 @@
 
                 <h3 class="step-title">3. I tuoi dati</h3>
                 <div class="form-row">
-                    <input type="text" id="nome" placeholder="Nome" required style="width:48%; padding: 15px; margin-right: 2%;">
-                    <input type="text" id="cognome" placeholder="Cognome" required style="width:48%; padding: 15px;">
+                    <div class="form-group half">
+                        <input type="text" id="nome" placeholder="Nome" required>
+                    </div>
+                    <div class="form-group half">
+                        <input type="text" id="cognome" placeholder="Cognome" required>
+                    </div>
                 </div>
                 
                 <div class="form-row">
-                    <div style="width:48%; margin-right: 2%;">
-                        <input type="email" id="email" placeholder="Email" required style="width:100%; padding: 15px;">
+                    <div class="form-group half">
+                        <input type="email" id="email" placeholder="Email" required>
                         <small class="error-text" id="err-email" style="display:none; color:red;">Email non valida</small>
                     </div>
-                    <div style="width:48%;">
-                        <input type="tel" id="telefono" placeholder="Telefono" required style="width:100%; padding: 15px;">
+                    <div class="form-group half">
+                        <input type="tel" id="telefono" placeholder="Telefono" required>
                         <small class="error-text" id="err-tel" style="display:none; color:red;">Inserire telefono valido</small>
                     </div>
                 </div>
@@ -129,8 +137,9 @@
             <div class="receipt-help">
                 <p>Contatti:</p>
                 <div class="help-grid">
-                    <div class="help-item"><i class="fas fa-phone-alt"></i> <a href="tel:0883123456">0883 123456</a></div>
-                    <div class="help-item"><i class="fas fa-map-marker-alt"></i> <a href="https://www.google.com/maps/search/?api=1&query=D.R.+Pneumatici+Via+Corato+64+Andria" target="_blank">Via Corato, 64</a></div>
+                    <div class="help-item"></i> <a href="tel:0883123456">Telefono</a></div>
+                    <div class="help-item"></i> <a href="https://www.google.com/maps/search/?api=1&query=D.R.+Pneumatici+Via+Corato+64+Andria" target="_blank">Via Corato, 64/66</a></div>
+                    <div class="help-item"></i> <a href="mailto:dr.penumatici.snc@gmail.com?subject=ASSISTENZA PRENOTAZIONE">E-mail</a></div>
                 </div>
             </div>
         </div>
