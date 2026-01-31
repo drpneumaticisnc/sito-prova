@@ -563,3 +563,34 @@ label { display: block; margin-bottom: 10px; font-weight: 700; color: var(--prim
         padding: 15px; /* Input leggermente meno alti su mobile */
     }
 }
+
+/* --- FRECCIA SCROLL ANIMATA --- */
+.scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    cursor: pointer;
+    opacity: 0.8;
+    animation: bounce 2s infinite;
+}
+
+.scroll-indicator i {
+    color: white; /* Colore bianco per risaltare sul blu */
+    font-size: 2rem;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Animazione Rimbalzo */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    40% {
+        transform: translateX(-50%) translateY(-15px);
+    }
+    60% {
+        transform: translateX(-50%) translateY(-7px);
+    }
+}
