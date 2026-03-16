@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancellazione appuntamento - D.R. PNEUMATICI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #e74c3c;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        h2 {
+            color: #0a2342;
+        }
+
+        p {
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box" id="status-box">
+        <div class="loader" id="spinner"></div>
+        <h2 id="titolo">Elaborazione in corso...</h2>
+        <p id="messaggio">Stiamo verificando la tua richiesta.</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <script>
+        // INSERISCI LE TUE CHIAVI FIREBASE QUI
+        const firebaseConfig = {
+            apiKey: "AIzaSyD_suC0f5BdE-ZDV3idkZ-0HPlIjEt6DTU",
+            authDomain: "dr-pneumatici-app.firebaseapp.com",
+            projectId: "dr-pneumatici-app",
+            storageBucket: "dr-pneumatici-app.firebasestorage.app",
+            messagingSenderId: "434776513276",
+            appId: "1:434776513276:web:52370fb79c6ab043319579"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Legge l'ID segreto dall'indirizzo web (es. cancella.html?id=XYZ123)
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+
+        if (id) {
+            // Cerca e cancella la prenotazione
+            db.collection("prenotazioni").doc(id).delete().then(() => {
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('titolo').innerText = "Prenotazione Annullata!";
+                document.getElementById('titolo').style.color = "#e74c3c";
+                document.getElementById('messaggio').innerText = "Il tuo appuntamento è stato cancellato con successo. Puoi chiudere questa pagina.";
+            }).catch(error => {
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('titolo').innerText = "Errore";
+                document.getElementById('messaggio').innerText = "Non è stato possibile annullare l'appuntamento o era già stato cancellato.";
+            });
+        } else {
+            document.getElementById('spinner').style.display = 'none';
+            document.getElementById('titolo').innerText = "Collegamento non valido";
+            document.getElementById('messaggio').innerText = "Nessun appuntamento trovato da cancellare.";
+        }
+    </script>
+</body>
+
+</html>
