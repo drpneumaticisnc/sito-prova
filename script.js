@@ -265,12 +265,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     nome: nome, cognome: cognome, email: email, telefono: tel, last_visit: new Date()
                 }, { merge: true });
 
-                // INVIA EMAIL E SALVA
-                fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST', mode: 'no-cors', 
-                    headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dataObj)
+// SALVA CLIENTE
+                db.collection("clienti").doc(email).set({
+                    nome: nome, cognome: cognome, email: email, telefono: tel, last_visit: new Date()
+                }, { merge: true });
+
+                // --- MODIFICA: PRIMA SALVA LA PRENOTAZIONE PER OTTENERE L'ID SEGRETO, POI MANDA LA MAIL ---
+                db.collection("prenotazioni").add(dataObj)
+                .then((docRef) => {
+                    // Aggiunge l'ID univoco del database ai dati da mandare via email
+                    dataObj.id_prenotazione = docRef.id;
+
+                    // Invia i dati al Postino (Google Script)
+                    return fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST', mode: 'no-cors', 
+                        headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dataObj)
+                    });
                 })
-                .then(() => db.collection("prenotazioni").add(dataObj))
                 .then(() => {
                     document.getElementById('booking-form-container').style.display='none';
                     document.getElementById('receipt-container').style.display='block';
