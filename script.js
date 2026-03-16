@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const storageForm = document.getElementById('storage-verification-form');
     const btnVerifica = document.getElementById('btn-verifica-gomme');
     const msgVerifica = document.getElementById('msg-verifica');
-    const misuraInput = document.getElementById('dep-misura'); // Input misura cliente
+    const targaInput = document.getElementById('dep-targa');
     
     let isStorageVerified = false;
 
@@ -35,38 +35,18 @@ document.addEventListener('DOMContentLoaded', function() {
     maxDate.setDate(today.getDate() + 21);
     dateInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
 
-    // --- FUNZIONE FORMATTAZIONE MISURA (SOLO NUMERI) ---
-    function formattaMisuraLive(inputElement) {
-        inputElement.addEventListener('input', function(e) {
-            // 1. Rimuove ISTANTANEAMENTE tutto ciò che non è un numero
-            let value = e.target.value.replace(/\D/g, ''); 
-            
-            // Limitiamo la lunghezza massima
-            if (value.length > 7) value = value.substring(0, 7);
-
-            let formatted = '';
-
-            // 2. Ricostruisce la stringa con la formattazione
-            if (value.length > 0) formatted += value.substring(0, 3);
-            if (value.length > 3) formatted += '/' + value.substring(3, 5);
-            if (value.length > 5) formatted += ' R' + value.substring(5, 7);
-            
-            // 3. Sovrascrive il valore nel campo
-            e.target.value = formatted;
+    // --- FORMATTAZIONE TARGA IN MAIUSCOLO ---
+    if (targaInput) {
+        targaInput.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
         });
-        
-        // Listener per tasto INVIO nel campo misura
-        inputElement.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault(); // Ferma l'invio del form principale
-                btnVerifica.click(); // Clicca invece su "Verifica"
+        targaInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                btnVerifica.click();
             }
         });
     }
-
-    // Applica la formattazione al campo misura
-    if(misuraInput) formattaMisuraLive(misuraInput);
-
 
     // --- GESTIONE LOGICA SERVIZI & DEPOSITO ---
     function checkStorageLogic() {
@@ -89,70 +69,71 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Attiva controllo logica al cambio e all'avvio
     if(serviceSelect) serviceSelect.addEventListener('change', checkStorageLogic);
-    checkStorageLogic(); // Esegue subito per bloccare la checkbox all'avvio
+    checkStorageLogic();
 
     storageCheck.addEventListener('change', function() {
         if (this.checked) {
             storageForm.style.display = "block";
             isStorageVerified = false;
-            document.getElementById('dep-nome').value = document.getElementById('nome').value;
-            document.getElementById('dep-cognome').value = document.getElementById('cognome').value;
+            // Reset risultato precedente
+            document.getElementById('deposito-result').style.display = 'none';
+            msgVerifica.innerHTML = '';
+            if(targaInput) targaInput.value = '';
         } else {
             storageForm.style.display = "none";
             isStorageVerified = true;
         }
     });
 
-    // --- LOGICA VERIFICA DATABASE ---
+    // --- LOGICA VERIFICA DEPOSITO PER TARGA ---
     if(btnVerifica) {
         btnVerifica.addEventListener('click', function(e) {
             e.preventDefault();
-            const n = document.getElementById('dep-nome').value.toLowerCase().trim();
-            const c = document.getElementById('dep-cognome').value.toLowerCase().trim();
-            const mRaw = document.getElementById('dep-misura').value.trim();
 
-            if(!n || !c || !mRaw) { alert("Compila tutti i dati per la verifica."); return; }
+            const targa = targaInput ? targaInput.value.trim().toUpperCase() : '';
 
-            // Pulisce la misura per il confronto (toglie spazi, /, R)
-            const mUser = mRaw.toUpperCase().replace(/[\s\/R-]/g, '');
+            if(!targa) {
+                alert("Inserisci la targa per effettuare la verifica.");
+                return;
+            }
 
             msgVerifica.innerHTML = "🔍 Controllo magazzino...";
             msgVerifica.style.color = "blue";
+            document.getElementById('deposito-result').style.display = 'none';
+            isStorageVerified = false;
 
-            // Cerchiamo nel DB
             db.collection("deposito")
-                .where("nome", "==", n)
-                .where("cognome", "==", c)
+                .where("targa", "==", targa)
                 .get()
                 .then(snap => {
                     if (snap.empty) {
-                        msgVerifica.innerHTML = "❌ Cliente non trovato. Controlla i dati oppure contatta l'officina.";
+                        msgVerifica.innerHTML = "❌ Nessun deposito trovato per questa targa. Controlla i dati oppure contatta l'officina.";
                         msgVerifica.style.color = "red";
                         isStorageVerified = false;
                         return;
                     }
 
-                    let found = false;
-                    snap.forEach(doc => {
-                        const dbMisura = doc.data().misura.toUpperCase().replace(/[\s\/R-]/g, '');
-                        if(dbMisura.includes(mUser) || mUser.includes(dbMisura)) found = true;
-                    });
+                    // Prende il primo documento trovato
+                    const docData = snap.docs[0].data();
+                    const nomeCliente = (docData.nome || '') + ' ' + (docData.cognome || '');
+                    const misura = docData.misura || 'N/D';
+                    const quantita = docData.quantita ? ' (n° ' + docData.quantita + ')' : '';
 
-                    if (found) {
-                        msgVerifica.innerHTML = "✅ Gomme Trovate! Puoi procedere.";
-                        msgVerifica.style.color = "green";
-                        isStorageVerified = true;
-                    } else {
-                        msgVerifica.innerHTML = `⚠️ Cliente trovato, ma la misura non corrisponde.<br>Inserita: ${mRaw}`;
-                        msgVerifica.style.color = "orange";
-                        isStorageVerified = false;
-                    }
+                    msgVerifica.innerHTML = "✅ Gomme trovate! Puoi procedere.";
+                    msgVerifica.style.color = "green";
+
+                    // Mostra i dati trovati
+                    document.getElementById('dep-res-cliente').textContent = nomeCliente.trim();
+                    document.getElementById('dep-res-misura').textContent = misura + quantita;
+                    document.getElementById('deposito-result').style.display = 'block';
+
+                    isStorageVerified = true;
                 })
                 .catch(err => {
                     console.error(err);
-                    msgVerifica.innerHTML = "Errore di connessione.";
+                    msgVerifica.innerHTML = "Errore di connessione. Riprova.";
+                    msgVerifica.style.color = "red";
                 });
         });
     }
@@ -215,25 +196,79 @@ document.addEventListener('DOMContentLoaded', function() {
             // RESET ERRORI
             document.querySelectorAll('input').forEach(i => i.style.border = "1px solid #ccc");
             document.getElementById('err-email').style.display = "none";
+            document.getElementById('err-email-confirm').style.display = "none";
             document.getElementById('err-tel').style.display = "none";
+            document.getElementById('err-service').style.display = "none";
 
-            const email = document.getElementById('email').value;
-            const tel = document.getElementById('telefono').value;
-            const orario = timeInput.value;
-            const nome = document.getElementById('nome').value;
-            const cognome = document.getElementById('cognome').value;
             const serv = serviceSelect.value;
-            
-            // VALIDAZIONE
+            const nome = document.getElementById('nome').value.trim();
+            const cognome = document.getElementById('cognome').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const emailConfirm = document.getElementById('email-confirm').value.trim();
+            const tel = document.getElementById('telefono').value.trim();
+            const orario = timeInput.value;
+            const data = dateInput.value;
+
             let valid = true;
-            if(!orario) { alert("Scegli un orario"); return; }
+
+            // Validazione servizio
+            if(!serv) {
+                document.getElementById('err-service').style.display = "block";
+                document.getElementById('service-type').style.border = "2px solid red";
+                valid = false;
+            }
+
+            // Validazione data
+            if(!data) {
+                dateInput.style.border = "2px solid red";
+                valid = false;
+            }
+
+            // Validazione orario
+            if(!orario) {
+                alert("⚠️ Seleziona un orario disponibile.");
+                return;
+            }
+
+            // Validazione deposito
             if(storageCheck.checked && !isStorageVerified) { 
-                alert("⛔️ Devi verificare le gomme in magazzino!\nClicca il tasto blu VERIFICA."); 
+                alert("⛔️ Devi verificare le gomme in magazzino!\nInserisci la targa e clicca VERIFICA."); 
                 document.getElementById('storage-verification-form').scrollIntoView({behavior:'smooth'});
                 return; 
             }
-            if(!email.includes('@')) { document.getElementById('err-email').style.display="block"; valid=false; }
-            if(tel.length < 9) { document.getElementById('err-tel').style.display="block"; valid=false; }
+
+            // Validazione nome
+            if(!nome) {
+                document.getElementById('nome').style.border = "2px solid red";
+                valid = false;
+            }
+
+            // Validazione cognome
+            if(!cognome) {
+                document.getElementById('cognome').style.border = "2px solid red";
+                valid = false;
+            }
+
+            // Validazione email
+            if(!email || !email.includes('@') || !email.includes('.')) {
+                document.getElementById('err-email').style.display = "block";
+                document.getElementById('email').style.border = "2px solid red";
+                valid = false;
+            }
+
+            // Validazione conferma email
+            if(!emailConfirm || email !== emailConfirm) {
+                document.getElementById('err-email-confirm').style.display = "block";
+                document.getElementById('email-confirm').style.border = "2px solid red";
+                valid = false;
+            }
+
+            // Validazione telefono
+            if(!tel || tel.length < 9) {
+                document.getElementById('err-tel').style.display = "block";
+                document.getElementById('telefono').style.border = "2px solid red";
+                valid = false;
+            }
 
             if(!valid) return;
 
@@ -242,22 +277,22 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.textContent = "Controllo...";
 
             // OVERBOOKING CHECK
-            db.collection("prenotazioni").where("data", "==", dateInput.value).where("ora", "==", orario).get()
+            db.collection("prenotazioni").where("data", "==", data).where("ora", "==", orario).get()
             .then(snap => {
                 if(snap.size >= 2) {
                     alert("⚠️ Orario appena occupato! Scegline un altro.");
                     btn.disabled = false;
                     btn.textContent = "CONFERMA PRENOTAZIONE";
-                    caricaOrariLive(dateInput.value);
+                    caricaOrariLive(data);
                     return;
                 }
 
                 const dataObj = {
                     nome: nome, cognome: cognome, email: email, telefono: tel,
                     servizio: serv, deposito: storageCheck.checked,
-                    data: dateInput.value, ora: orario, 
+                    data: data, ora: orario, 
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    calendar_link: `https://www.google.com/calendar/render?action=TEMPLATE&text=DR%20Pneumatici&dates=${dateInput.value.replace(/-/g,'')}T${orario.replace(':','')}00/${dateInput.value.replace(/-/g,'')}T${(parseInt(orario)+1)}0000&details=${serv}&location=Via%20Corato%2064`
+                    calendar_link: `https://www.google.com/calendar/render?action=TEMPLATE&text=DR%20Pneumatici&dates=${data.replace(/-/g,'')}T${orario.replace(':','')}00/${data.replace(/-/g,'')}T${(parseInt(orario)+1)}0000&details=${serv}&location=Via%20Corato%2064`
                 };
 
                 // SALVA CLIENTE
@@ -265,35 +300,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     nome: nome, cognome: cognome, email: email, telefono: tel, last_visit: new Date()
                 }, { merge: true });
 
-// SALVA CLIENTE
-                db.collection("clienti").doc(email).set({
-                    nome: nome, cognome: cognome, email: email, telefono: tel, last_visit: new Date()
-                }, { merge: true });
-
-                // --- MODIFICA: PRIMA SALVA LA PRENOTAZIONE PER OTTENERE L'ID SEGRETO, POI MANDA LA MAIL ---
+                // SALVA PRENOTAZIONE, POI MANDA MAIL
                 db.collection("prenotazioni").add(dataObj)
                 .then((docRef) => {
-                    // Aggiunge l'ID univoco del database ai dati da mandare via email
                     dataObj.id_prenotazione = docRef.id;
 
-                    // Invia i dati al Postino (Google Script)
                     return fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST', mode: 'no-cors', 
                         headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dataObj)
                     });
                 })
                 .then(() => {
-                    document.getElementById('booking-form-container').style.display='none';
-                    document.getElementById('receipt-container').style.display='block';
+                    // Mostra ricevuta e nasconde il form
+                    document.getElementById('booking-form-container').style.display = 'none';
+                    const receipt = document.getElementById('receipt-container');
+                    receipt.style.display = 'block';
+
                     document.getElementById('rec-name').textContent = nome + " " + cognome;
-                    document.getElementById('rec-date').textContent = dateInput.value;
+                    document.getElementById('rec-date').textContent = data;
                     document.getElementById('rec-time').textContent = orario;
                     document.getElementById('rec-service').textContent = serv;
                     document.getElementById('rec-storage').textContent = storageCheck.checked ? "Sì" : "No";
                     document.getElementById('rec-email').textContent = email;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    // MODIFICA: scroll alla ricevuta, non al top della pagina
+                    receipt.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 })
-                .catch(err => { console.error(err); alert("Errore tecnico"); btn.disabled=false; });
+                .catch(err => { console.error(err); alert("Errore tecnico"); btn.disabled=false; btn.textContent="CONFERMA PRENOTAZIONE"; });
             });
         });
     }

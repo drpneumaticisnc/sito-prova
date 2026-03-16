@@ -38,12 +38,13 @@
                 <h3 class="step-title">1. Servizio</h3>
                 <div class="form-row">
                     <div class="form-group half">
-                        <label>Tipo di Servizio</label>
+                        <label>Tipo di Servizio <span style="color:red;">*</span></label>
                         <select id="service-type" required>
                             <option value="" disabled selected>Seleziona un servizio</option>
                             <option value="Cambio Gomme">Cambio Gomme</option>
                             <option value="Convergenza">Convergenza</option>
                         </select>
+                        <small class="error-text" id="err-service" style="display:none; color:red;">Seleziona un servizio</small>
                     </div>
 
                     <div class="form-group half checkbox-group" style="margin-top: 5px;">
@@ -59,34 +60,36 @@
                     </div>
                 </div>
 
+                <!-- MODIFICA: form deposito semplificato con sola targa -->
                 <div id="storage-verification-form" style="display:none; background:#f0f8ff; padding:15px; border-radius:8px; border:1px solid #bde0fe; margin-bottom:15px;">
                     <p style="margin:0 0 10px 0; font-size:0.9rem; font-weight:bold; color:#0a2342;">
                         <i class="fas fa-search"></i> Verifica disponibilità magazzino:
                     </p>
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <input type="text" id="dep-nome" placeholder="Nome">
+                    <div class="form-row" style="align-items: flex-end;">
+                        <div class="form-group half" style="margin-bottom:0;">
+                            <input type="text" id="dep-targa" placeholder="Targa (es. AB123CD)" style="text-transform:uppercase;">
                         </div>
-                        <div class="form-group half">
-                            <input type="text" id="dep-cognome" placeholder="Cognome">
+                        <div class="form-group half" style="margin-bottom:0;">
+                            <button type="button" id="btn-verifica-gomme" style="width:100%; background:#2ca5ff; color:white; border:none; padding:18px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:1rem;">VERIFICA</button>
                         </div>
                     </div>
-                    
-                    <label style="font-size:0.8rem; font-weight:bold; color:#555;">Misura Pneumatici:</label>
-                    <input type="text" id="dep-misura" inputmode="numeric" pattern="[0-9]*" placeholder="Misura Pneumatici (es. 2055516)" style="margin-top:5px; margin-bottom: 8px;">
-                    <p style="font-size:0.75rem; color:#666; margin-bottom:10px;">Il sistema inserirà automaticamente barre e spazi.</p>
-
-                    <button type="button" id="btn-verifica-gomme" style="width:100%; background:#2ca5ff; color:white; border:none; padding:12px; border-radius:4px; cursor:pointer; font-weight:bold;">VERIFICA DISPONIBILITÀ</button>
                     <p id="msg-verifica" style="font-size:0.9rem; margin-top:10px; font-weight:bold; min-height: 20px;"></p>
+
+                    <!-- Risultato verifica deposito -->
+                    <div id="deposito-result" style="display:none; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; padding:12px; margin-top:8px;">
+                        <p style="margin:0 0 6px 0; font-weight:bold; color:#2e7d32; font-size:0.9rem;"><i class="fas fa-check-circle"></i> Dati trovati in magazzino:</p>
+                        <p style="margin:3px 0; font-size:0.9rem;">Cliente: <strong id="dep-res-cliente" style="text-transform: uppercase;"></strong></p>
+                        <p style="margin:3px 0; font-size:0.9rem;">Pneumatici in deposito: <strong id="dep-res-misura"></strong></p>
+                    </div>
                 </div>
 
                 <h3 class="step-title">2. Data e Ora</h3>
                 <div class="form-group">
-                    <label>Data</label>
+                    <label>Data <span style="color:red;">*</span></label>
                     <input type="date" id="booking-date" required>
                 </div>
                 <div class="form-group">
-                    <label>Orari Disponibili</label>
+                    <label>Orari Disponibili <span style="color:red;">*</span></label>
                     <div id="slots-container" class="slots-grid">
                         <p style="color:#666; font-style:italic;">Seleziona una data per vedere gli orari.</p>
                     </div>
@@ -96,20 +99,28 @@
                 <h3 class="step-title">3. I tuoi dati</h3>
                 <div class="form-row">
                     <div class="form-group half">
-                        <input type="text" id="nome" placeholder="Nome" required>
+                        <input type="text" id="nome" placeholder="Nome *" required>
                     </div>
                     <div class="form-group half">
-                        <input type="text" id="cognome" placeholder="Cognome" required>
+                        <input type="text" id="cognome" placeholder="Cognome *" required>
                     </div>
                 </div>
                 
+                <!-- MODIFICA: email e conferma email su stessa riga -->
                 <div class="form-row">
                     <div class="form-group half">
-                        <input type="email" id="email" placeholder="Email" required>
+                        <input type="email" id="email" placeholder="Email *" required>
                         <small class="error-text" id="err-email" style="display:none; color:red;">Email non valida</small>
                     </div>
                     <div class="form-group half">
-                        <input type="tel" id="telefono" placeholder="Telefono" required>
+                        <input type="email" id="email-confirm" placeholder="Conferma Email *" required>
+                        <small class="error-text" id="err-email-confirm" style="display:none; color:red;">Le email non coincidono</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <input type="tel" id="telefono" placeholder="Telefono *" required>
                         <small class="error-text" id="err-tel" style="display:none; color:red;">Inserire telefono valido</small>
                     </div>
                 </div>
@@ -126,7 +137,7 @@
                     <p>Ti aspettiamo in officina.</p>
                 </div>
                 <div class="receipt-body">
-                    <div class="receipt-row"><span>Cliente:</span> <strong id="rec-name"></strong></div>
+                    <div class="receipt-row"><span>Cliente:</span> <strong id="rec-name" style="text-transform: capitalize;"></strong></div>
                     <div class="receipt-row"><span>Servizio:</span> <strong id="rec-service"></strong></div>
                     <div class="receipt-row"><span>Deposito:</span> <strong id="rec-storage"></strong></div>
                     <div class="receipt-row"><span>Data:</span> <strong id="rec-date" style="color:#2ca5ff; font-size:1.2rem;"></strong></div>

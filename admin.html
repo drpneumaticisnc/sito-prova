@@ -53,9 +53,12 @@
         /* Deposito Info nello slot */
         .slot-service { font-style: italic; color: #555; margin: 2px 0; }
         .slot-tyres { font-weight: bold; color: #d35400; background: rgba(255,255,255,0.5); padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; margin-top: 4px; }
+        .slot-delete-btn { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 50%; background: var(--danger); color: white; border: none; font-size: 0.75rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: opacity 0.2s, transform 0.2s; z-index: 10; }
+        .slot-delete-btn:hover { opacity: 1; transform: scale(1.15); }
 
         /* --- RICERCA MAGAZZINO (SPLIT) --- */
-        .search-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .search-split { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        @media (max-width: 600px) { .search-split { grid-template-columns: 1fr; } }
         .search-container { position: relative; }
         .search-container input { width: 100%; padding: 12px 12px 12px 35px; border: none; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9rem; }
         .search-container i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #aaa; }
@@ -137,6 +140,10 @@
                 <i class="fas fa-ruler"></i>
                 <input type="text" id="search-mag-mis" placeholder="Misura (es 2055516)..." onkeyup="filtraMagazzino()">
             </div>
+            <div class="search-container">
+                <i class="fas fa-car"></i>
+                <input type="text" id="search-mag-targa" placeholder="Cerca Targa..." onkeyup="filtraMagazzino()">
+            </div>
         </div>
 
         <div id="magazzino-list"></div>
@@ -189,6 +196,9 @@
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // Helper globale: prima lettera maiuscola per ogni parola
+        const cap = s => (s || '').replace(/\b\w/g, c => c.toUpperCase());
 
         let currentDate = new Date();
         
@@ -285,8 +295,10 @@
                 const depSnap = await db.collection("deposito").get();
                 depSnap.forEach(doc => {
                     const d = doc.data();
+                    // Indicizzato sia per nome+cognome (fallback) che per targa
                     const key = (d.nome + " " + d.cognome).toLowerCase().trim();
-                    depMap[key] = d; 
+                    depMap[key] = d;
+                    if (d.targa) depMap['targa:' + d.targa.toUpperCase()] = d;
                 });
 
                 let html = "";
@@ -297,33 +309,39 @@
                     slots.forEach(p => {
                         let classe = p.tipo === 'blocco' ? 'blocked' : (p.tipo === 'manuale' ? 'manual' : 'client');
                         let contenuto = "";
-                        
+
                         if(p.tipo === 'blocco') {
                             contenuto = '<i class="fas fa-lock"></i> CHIUSO';
                         } else {
                             // Cerca info gomme se deposito è true
                             let gommeInfo = "";
                             if(p.deposito) {
-                                const key = (p.nome + " " + p.cognome).toLowerCase().trim();
-                                const gomme = depMap[key];
+                                // Prima cerca per targa (se salvata nella prenotazione), poi per nome+cognome
+                                const keyTarga = p.targa ? 'targa:' + p.targa.toUpperCase() : null;
+                                const keyNome  = (p.nome + " " + p.cognome).toLowerCase().trim();
+                                const gomme    = (keyTarga && depMap[keyTarga]) || depMap[keyNome];
                                 if(gomme) {
-                                    gommeInfo = `<div class="slot-tyres"><i class="fas fa-truck-loading"></i>  ${gomme.nome} ${gomme.cognome} - ${gomme.misura}</div>`;
+                                    const targaLabel = gomme.targa ? ` • 🚗 ${gomme.targa}` : '';
+                                    gommeInfo = `<div class="slot-tyres"><i class="fas fa-truck-loading"></i> ${gomme.misura}${targaLabel}</div>`;
                                 } else {
                                     gommeInfo = `<div class="slot-tyres" style="color:red">Gomme non trovate</div>`;
                                 }
                             }
 
                             contenuto = `
-                                <b>${p.cognome} ${p.nome}</b>
+                                <b>${cap(p.cognome)} ${cap(p.nome)}</b>
                                 <div class="slot-service">${p.servizio}</div>
                                 ${gommeInfo}
                             `;
                         }
                         
-                        let tooltip = `Cliente: ${p.nome} ${p.cognome}\nTel: ${p.telefono}\nEmail: ${p.email}\nServizio: ${p.servizio}\nDeposito: ${p.deposito?'SI':'NO'}`;
+                        let tooltip = `Cliente: ${cap(p.nome)} ${cap(p.cognome)}\nTel: ${p.telefono}\nEmail: ${p.email}\nServizio: ${p.servizio}\nDeposito: ${p.deposito?'SI':'NO'}`;
                         if(p.tipo==='blocco') tooltip = "Orario Bloccato";
 
-                        slotsHtml += `<div class="slot ${classe}" title="${tooltip}" onclick="gestisciOccupato('${p.id}', '${p.tipo}', '${p.cognome}')">${contenuto}</div>`;
+                        slotsHtml += `<div class="slot ${classe}" title="${tooltip}" style="position:relative;">
+                            ${contenuto}
+                            <button class="slot-delete-btn" title="Elimina prenotazione" onclick="eliminaPrenotazione('${p.id}', '${cap(p.cognome)} ${cap(p.nome)}')">✕</button>
+                        </div>`;
                     });
 
                     for(let i=0; i < (2 - slots.length); i++) {
@@ -363,6 +381,24 @@
                 if(res.isConfirmed) {
                     db.collection("prenotazioni").doc(id).delete();
                     Swal.fire('Eliminato', '', 'success');
+                }
+            });
+        }
+
+        function eliminaPrenotazione(id, nomeCompleto) {
+            Swal.fire({
+                title: 'Eliminare la prenotazione?',
+                html: `<b>${nomeCompleto}</b>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Sì, elimina',
+                cancelButtonText: 'Annulla'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    db.collection("prenotazioni").doc(id).delete().then(() => {
+                        Swal.fire({ title: 'Eliminata!', icon: 'success', timer: 1200, showConfirmButton: false });
+                    });
                 }
             });
         }
@@ -419,7 +455,8 @@
                 html += `
                     <div class="item-card magazzino">
                         <div class="item-info">
-                            <h4>${item.cognome} ${item.nome}</h4>
+                            <h4>${cap(item.cognome)} ${cap(item.nome)}</h4>
+                            <p style="font-size:0.95rem; font-weight:700; color:var(--accent);">🚗 Targa: ${item.targa || '—'}</p>
                             <p><b>${item.misura}</b> • ${item.brand}</p>
                             <p>${item.stagione} (Qta: ${item.quantita})</p>
                             <p style="font-size:0.75rem; color:#999;">${item.note || ''}</p>
@@ -435,11 +472,14 @@
         function filtraMagazzino() {
             const cli = document.getElementById('search-mag-cli').value.toLowerCase();
             const mis = document.getElementById('search-mag-mis').value.toLowerCase();
+            const tar = document.getElementById('search-mag-targa').value.toUpperCase().trim();
             const filtered = allMagazzino.filter(item => {
                 const matchNome = (item.nome + " " + item.cognome).toLowerCase().includes(cli);
                 const dbMisura = item.misura.replace(/\s/g, '').toLowerCase();
                 const searchMisura = mis.replace(/\s/g, '').toLowerCase();
-                return matchNome && dbMisura.includes(searchMisura);
+                const matchMisura = dbMisura.includes(searchMisura);
+                const matchTarga = !tar || (item.targa || '').toUpperCase().includes(tar);
+                return matchNome && matchMisura && matchTarga;
             });
             renderMagazzino(filtered);
         }
@@ -448,38 +488,90 @@
             let isEdit = !!item;
             const { value: formValues } = await Swal.fire({
                 title: isEdit ? 'Modifica Gomme' : 'Nuovo Deposito',
+                showCloseButton: true,
                 html: `
-                    <input id="sw-nome" class="swal2-input" placeholder="Nome" value="${item ? item.nome : ''}">
-                    <input id="sw-cognome" class="swal2-input" placeholder="Cognome" value="${item ? item.cognome : ''}">
-                    <input id="sw-misura" class="swal2-input" placeholder="Misura (es 2055516)" value="${item ? item.misura : ''}">
-                    <input id="sw-brand" class="swal2-input" placeholder="Marca" value="${item ? item.brand : ''}">
+                    <input id="sw-targa" class="swal2-input" placeholder="Targa *  (es. AB123CD)" value="${item && item.targa ? item.targa.toUpperCase() : ''}">
+                    <input id="sw-nome" class="swal2-input" placeholder="Nome *" value="${item ? item.nome : ''}">
+                    <input id="sw-cognome" class="swal2-input" placeholder="Cognome *" value="${item ? item.cognome : ''}">
+                    <input id="sw-misura" class="swal2-input" placeholder="Misura * (es 2055516)" value="${item ? item.misura : ''}">
+                    <input id="sw-brand" class="swal2-input" placeholder="Marca *" value="${item ? item.brand : ''}">
                     <select id="sw-stagione" class="swal2-input">
-                        <option value="Null">Seleziona stagione</option>
+                        <option value="">Seleziona stagione *</option>
                         <option value="Estive" ${item && item.stagione==='Estive'?'selected':''}>Estive</option>
                         <option value="Invernali" ${item && item.stagione==='Invernali'?'selected':''}>Invernali</option>
                         <option value="4 Stagioni" ${item && item.stagione==='4 Stagioni'?'selected':''}>4 Stagioni</option>
                     </select>
-                    <input id="sw-qty" type="number" class="swal2-input" placeholder="Quantità" value="${item ? item.quantita : 4}">
-                    <input id="sw-note" class="swal2-input" placeholder="Note (facoltativo)" value="${item ? item.note : ''}">
+                    <input id="sw-qty" type="number" min="1" class="swal2-input" placeholder="Quantità *" value="${item ? item.quantita : 4}">
+                    <input id="sw-note" class="swal2-input" placeholder="Note (facoltativo)" value="${item && item.note ? item.note : ''}">
                 `,
                 focusConfirm: false,
-                didOpen: () => { const inp = document.getElementById('sw-misura'); formattaMisuraLive(inp); },
+                didOpen: () => {
+                    const inp = document.getElementById('sw-misura');
+                    formattaMisuraLive(inp);
+                    // Forza maiuscolo sulla targa live
+                    const targaInp = document.getElementById('sw-targa');
+                    targaInp.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+                },
                 preConfirm: () => {
-                    return {
-                        nome: document.getElementById('sw-nome').value.toLowerCase(),
-                        cognome: document.getElementById('sw-cognome').value.toLowerCase(),
-                        misura: document.getElementById('sw-misura').value,
-                        brand: document.getElementById('sw-brand').value,
-                        stagione: document.getElementById('sw-stagione').value,
-                        quantita: document.getElementById('sw-qty').value,
-                        note: document.getElementById('sw-note').value,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    const targa   = document.getElementById('sw-targa').value.trim().toUpperCase();
+                    const nome    = cap(document.getElementById('sw-nome').value.trim());
+                    const cognome = cap(document.getElementById('sw-cognome').value.trim());
+                    const misura  = document.getElementById('sw-misura').value.trim();
+                    const brand   = document.getElementById('sw-brand').value.trim();
+                    const stagione= document.getElementById('sw-stagione').value;
+                    const qty     = document.getElementById('sw-qty').value;
+
+                    // Validazione campi obbligatori
+                    const mancanti = [];
+                    if (!targa)   mancanti.push('Targa');
+                    if (!nome)    mancanti.push('Nome');
+                    if (!cognome) mancanti.push('Cognome');
+                    if (!misura)  mancanti.push('Misura');
+                    if (!brand)   mancanti.push('Marca');
+                    if (!stagione) mancanti.push('Stagione');
+                    if (!qty || qty < 1) mancanti.push('Quantità');
+
+                    if (mancanti.length > 0) {
+                        Swal.showValidationMessage(`⚠️ Campi obbligatori mancanti: ${mancanti.join(', ')}`);
+                        return false;
                     }
+
+                    return {
+                        targa:    targa,
+                        nome:     nome,
+                        cognome:  cognome,
+                        misura:   misura,
+                        brand:    brand.toUpperCase(),
+                        stagione: stagione,
+                        quantita: qty,
+                        note:     document.getElementById('sw-note').value.trim(),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    };
                 }
             });
             if (formValues) {
-                if(!formValues.nome || !formValues.misura) { Swal.fire('Errore', 'Nome e Misura obbligatori', 'error'); return; }
-                let promise = isEdit ? db.collection("deposito").doc(item.id).update(formValues) : db.collection("deposito").add(formValues);
+                // Controllo targa duplicata solo su nuovo inserimento
+                if (!isEdit) {
+                    const esistente = allMagazzino.find(i => (i.targa || '').toUpperCase() === formValues.targa);
+                    if (esistente) {
+                        const res = await Swal.fire({
+                            icon: 'warning',
+                            title: `Targa ${formValues.targa} già presente!`,
+                            html: `Intestatario: <b>${esistente.cognome} ${esistente.nome}</b><br>Misura: <b>${esistente.misura}</b><br><br>Vuoi aprire la scheda in modifica?`,
+                            showCancelButton: true,
+                            confirmButtonText: 'Sì, modifica',
+                            cancelButtonText: 'Annulla',
+                            confirmButtonColor: '#2ca5ff'
+                        });
+                        if (res.isConfirmed) {
+                            openModalMagazzino(encodeURIComponent(JSON.stringify(esistente)));
+                        }
+                        return;
+                    }
+                }
+                let promise = isEdit
+                    ? db.collection("deposito").doc(item.id).update(formValues)
+                    : db.collection("deposito").add(formValues);
                 promise.then(() => { Swal.fire('Salvato!', '', 'success'); caricaMagazzino(); });
             }
         }
@@ -498,7 +590,7 @@
             let html = "";
             list.forEach(c => {
                 let cStr = encodeURIComponent(JSON.stringify(c));
-                html += `<tr><td><b>${c.cognome}</b> ${c.nome}</td><td>${c.email}</td><td>${c.telefono}</td><td>
+                html += `<tr><td><b>${cap(c.cognome)}</b> ${cap(c.nome)}</td><td>${c.email}</td><td>${c.telefono}</td><td>
                             <button class="action-btn btn-edit" onclick="modificaCliente('${cStr}')"><i class="fas fa-pen"></i></button>
                             <button class="action-btn btn-del" onclick="eliminaItem('clienti','${c.id}')"><i class="fas fa-trash"></i></button>
                         </td></tr>`;
@@ -518,7 +610,7 @@
                     <label>Cognome</label><input id="cl-cognome" class="swal2-input" value="${c.cognome}">
                     <label>Email</label><input id="cl-email" class="swal2-input" value="${c.email}">
                     <label>Telefono</label><input id="cl-tel" class="swal2-input" value="${c.telefono}">`,
-                focusConfirm: false, preConfirm: () => { return { nome: document.getElementById('cl-nome').value, cognome: document.getElementById('cl-cognome').value, email: document.getElementById('cl-email').value, telefono: document.getElementById('cl-tel').value } }
+                focusConfirm: false, preConfirm: () => { return { nome: cap(document.getElementById('cl-nome').value.trim()), cognome: cap(document.getElementById('cl-cognome').value.trim()), email: document.getElementById('cl-email').value.trim().toLowerCase(), telefono: document.getElementById('cl-tel').value.trim() } }
             });
             if (formValues) { db.collection("clienti").doc(c.id).update(formValues).then(() => { Swal.fire('Cliente Aggiornato', '', 'success'); caricaClienti(); }); }
         }
