@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Validazione deposito
             if(storageCheck.checked && !isStorageVerified) { 
-                alert("⛔️ Devi verificare le gomme in magazzino!\nInserisci la targa e clicca VERIFICA."); 
+                alert("⛔️ Devi verificare le gomme in magazzino!\nInserisci la targa e clicca VERIFICA.\nAltrimenti deseleziona il DEPOSITO."); 
                 document.getElementById('storage-verification-form').scrollIntoView({behavior:'smooth'});
                 return; 
             }

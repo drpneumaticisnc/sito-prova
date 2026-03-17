@@ -615,7 +615,7 @@
             if (formValues) { db.collection("clienti").doc(c.id).update(formValues).then(() => { Swal.fire('Cliente Aggiornato', '', 'success'); caricaClienti(); }); }
         }
         function eliminaItem(coll, id) {
-            Swal.fire({ title: 'Sei sicuro?', text: "Irreversibile!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Elimina' }).then((result) => {
+            Swal.fire({ title: 'Sei sicuro?', text: "Irreversibile!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Elimina', cancelButtonText: 'Annulla' }).then((result) => {
                 if (result.isConfirmed) { db.collection(coll).doc(id).delete().then(() => { Swal.fire('Eliminato!', '', 'success'); if(coll==='deposito') caricaMagazzino(); if(coll==='clienti') caricaClienti(); }); }
             });
         }
