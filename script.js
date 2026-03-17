@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             // RESET ERRORI
-            document.querySelectorAll('input').forEach(i => i.style.border = "1px solid #ccc");
+            document.querySelectorAll('input, select').forEach(i => i.classList.remove('input-error'));
             document.getElementById('err-email').style.display = "none";
             document.getElementById('err-email-confirm').style.display = "none";
             document.getElementById('err-tel').style.display = "none";
@@ -214,13 +214,13 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validazione servizio
             if(!serv) {
                 document.getElementById('err-service').style.display = "block";
-                document.getElementById('service-type').style.border = "2px solid red";
+                document.getElementById('service-type').classList.add('input-error');
                 valid = false;
             }
 
             // Validazione data
             if(!data) {
-                dateInput.style.border = "2px solid red";
+                dateInput.classList.add('input-error');
                 valid = false;
             }
 
@@ -239,38 +239,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Validazione nome
             if(!nome) {
-                document.getElementById('nome').style.border = "2px solid red";
+                document.getElementById('nome').classList.add('input-error');
                 valid = false;
             }
 
             // Validazione cognome
             if(!cognome) {
-                document.getElementById('cognome').style.border = "2px solid red";
+                document.getElementById('cognome').classList.add('input-error');
                 valid = false;
             }
 
             // Validazione email
             if(!email || !email.includes('@') || !email.includes('.')) {
                 document.getElementById('err-email').style.display = "block";
-                document.getElementById('email').style.border = "2px solid red";
+                document.getElementById('email').classList.add('input-error');
                 valid = false;
             }
 
             // Validazione conferma email
             if(!emailConfirm || email !== emailConfirm) {
                 document.getElementById('err-email-confirm').style.display = "block";
-                document.getElementById('email-confirm').style.border = "2px solid red";
+                document.getElementById('email-confirm').classList.add('input-error');
                 valid = false;
             }
 
             // Validazione telefono
             if(!tel || tel.length < 9) {
                 document.getElementById('err-tel').style.display = "block";
-                document.getElementById('telefono').style.border = "2px solid red";
+                document.getElementById('telefono').classList.add('input-error');
                 valid = false;
             }
 
-            if(!valid) return;
+            if(!valid) {
+                // Scroll al primo campo con errore
+                const primoErrore = document.querySelector('.input-error, [style*="border: 2px solid red"], [style*="border-color: red"]');
+                if(primoErrore) primoErrore.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
 
             const btn = document.querySelector('.btn-submit');
             btn.disabled = true;

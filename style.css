@@ -516,7 +516,10 @@ label { display: block; margin-bottom: 10px; font-weight: 700; color: var(--prim
 
 /* Errori Form */
 .input-error { border: 2px solid red !important; background-color: #fff0f0 !important; }
-.error-text { color: red; font-size: 0.8rem; display: none; margin-top: -15px; margin-bottom: 15px; }
+.error-text { color: red; font-size: 0.8rem; display: none; margin-top: 5px; margin-bottom: 0; }
+
+/* Garantisce che i form-group con errori non collassino su mobile */
+.form-group.half { display: flex; flex-direction: column; }
 
 /* --- RESPONSIVE MOBILE --- */
 @media (max-width: 768px) {
