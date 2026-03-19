@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prenotazione - D.R. PNEUMATICI</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Open+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <nav>
@@ -24,15 +28,15 @@
             <p>Scegli il servizio e l'orario più comodo per te.</p>
         </div>
         <div class="scroll-indicator" onclick="window.scrollBy({top: window.innerHeight, behavior: 'smooth'});">
-    <i class="fas fa-chevron-down"></i>
-</div>
+            <i class="fas fa-chevron-down"></i>
+        </div>
     </header>
 
     <section id="prenotazione-wizard">
-        
+
         <div class="booking-container" id="booking-form-container">
             <form id="booking-form" novalidate>
-                
+
                 <h3 class="step-title">1. Servizio</h3>
                 <div class="form-row">
                     <div class="form-group half">
@@ -42,12 +46,14 @@
                             <option value="Cambio Gomme">Cambio Gomme</option>
                             <option value="Convergenza">Convergenza</option>
                         </select>
-                        <small class="error-text" id="err-service" style="display:none; color:red;">Seleziona un servizio</small>
+                        <small class="error-text" id="err-service" style="display:none; color:red;">Seleziona un
+                            servizio</small>
                     </div>
 
                     <div class="form-group half checkbox-group" style="margin-top: 5px;">
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <label id="label-storage" style="display:flex; align-items:center; gap:10px; cursor:pointer; opacity: 0.5;">
+                            <label id="label-storage"
+                                style="display:flex; align-items:center; gap:10px; cursor:pointer; opacity: 0.5;">
                                 <input type="checkbox" id="storage-check" disabled>
                                 Ho le gomme in deposito da voi
                             </label>
@@ -59,25 +65,36 @@
                 </div>
 
                 <!-- MODIFICA: form deposito semplificato con sola targa -->
-                <div id="storage-verification-form" style="display:none; background:#f0f8ff; padding:15px; border-radius:8px; border:1px solid #bde0fe; margin-bottom:15px;">
+                <div id="storage-verification-form"
+                    style="display:none; background:#f0f8ff; padding:15px; border-radius:8px; border:1px solid #bde0fe; margin-bottom:15px;">
                     <p style="margin:0 0 10px 0; font-size:0.9rem; font-weight:bold; color:#0a2342;">
                         <i class="fas fa-search"></i> Verifica disponibilità magazzino:
                     </p>
                     <div class="form-row" style="align-items: flex-end;">
                         <div class="form-group half" style="margin-bottom:0;">
-                            <input type="text" id="dep-targa" placeholder="Targa (es. AB123CD)" style="text-transform:uppercase;">
+                            <input type="text" id="dep-targa" placeholder="Targa (es. AB123CD)"
+                                style="text-transform:uppercase;">
                         </div>
                         <div class="form-group half" style="margin-bottom:0;">
-                            <button type="button" id="btn-verifica-gomme" style="width:100%; background:#2ca5ff; color:white; border:none; padding:18px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:1rem;">VERIFICA</button>
+                            <button type="button" id="btn-verifica-gomme"
+                                style="width:100%; background:#2ca5ff; color:white; border:none; padding:18px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:1rem;">VERIFICA</button>
                         </div>
                     </div>
-                    <p id="msg-verifica" style="font-size:0.9rem; margin-top:10px; font-weight:bold; min-height: 20px;"></p>
+                    <p id="msg-verifica" style="font-size:0.9rem; margin-top:10px; font-weight:bold; min-height: 10px;">
+                    </p>
 
                     <!-- Risultato verifica deposito -->
-                    <div id="deposito-result" style="display:none; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; padding:12px; margin-top:8px;">
-                        <p style="margin:0 0 6px 0; font-weight:bold; color:#2e7d32; font-size:0.9rem;"><i class="fas fa-check-circle"></i> Dati trovati in magazzino:</p>
-                        <p style="margin:3px 0; font-size:0.9rem;">Cliente: <strong id="dep-res-cliente" style="text-transform: uppercase;"></strong></p>
-                        <p style="margin:3px 0; font-size:0.9rem;">Pneumatici in deposito: <strong id="dep-res-misura"></strong></p>
+                    <div id="deposito-result"
+                        style="display:none; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:8px; padding:12px; margin-top:8px;">
+                        <p style="margin:0 0 6px 0; font-weight:bold; color:#2e7d32; font-size:0.9rem;"><i
+                                class="fas fa-check-circle"></i> Dati trovati in magazzino:</p>
+                        <p style="margin:3px 0; font-size:0.9rem;">Cliente: <strong id="dep-res-cliente"
+                                style="text-transform: uppercase;"></strong></p>
+                        <p style="margin:3px 0; font-size:0.9rem;">Pneumatici in deposito: <strong
+                                id="dep-res-misura"></strong></p>
+                        <p style="margin: 10px 0 0; font-size:0.9rem; font-weight:bold; color:red;">
+                            VERIFICA CHE IL CLIENTE E LA MISURA CORRISPONDANO
+                        </p>
                     </div>
                 </div>
 
@@ -103,23 +120,26 @@
                         <input type="text" id="cognome" placeholder="Cognome *" required>
                     </div>
                 </div>
-                
+
                 <!-- MODIFICA: email e conferma email su stessa riga -->
                 <div class="form-row">
                     <div class="form-group half">
                         <input type="email" id="email" placeholder="Email *" required>
-                        <small class="error-text" id="err-email" style="display:none; color:red;">Email non valida</small>
+                        <small class="error-text" id="err-email" style="display:none; color:red;">Email non
+                            valida</small>
                     </div>
                     <div class="form-group half">
                         <input type="email" id="email-confirm" placeholder="Conferma Email *" required>
-                        <small class="error-text" id="err-email-confirm" style="display:none; color:red;">Le email non coincidono</small>
+                        <small class="error-text" id="err-email-confirm" style="display:none; color:red;">Le email non
+                            coincidono</small>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group half">
                         <input type="tel" id="telefono" placeholder="Telefono *" required>
-                        <small class="error-text" id="err-tel" style="display:none; color:red;">Inserire telefono valido</small>
+                        <small class="error-text" id="err-tel" style="display:none; color:red;">Inserire telefono
+                            valido</small>
                     </div>
                 </div>
 
@@ -130,17 +150,22 @@
         <div id="receipt-container" style="display: none;">
             <div class="receipt-card">
                 <div class="receipt-header">
-                    <img src="logo finale 2.png" alt="Logo DR" style="width: 80px; filter: brightness(0) invert(1); margin-bottom: 15px;">
+                    <img src="logo finale 2.png" alt="Logo DR"
+                        style="width: 80px; filter: brightness(0) invert(1); margin-bottom: 15px;">
                     <h2>Prenotazione Confermata!</h2>
                     <p>Ti aspettiamo in officina.</p>
                 </div>
                 <div class="receipt-body">
-                    <div class="receipt-row"><span>Cliente:</span> <strong id="rec-name" style="text-transform: capitalize;"></strong></div>
+                    <div class="receipt-row"><span>Cliente:</span> <strong id="rec-name"
+                            style="text-transform: capitalize;"></strong></div>
                     <div class="receipt-row"><span>Servizio:</span> <strong id="rec-service"></strong></div>
                     <div class="receipt-row"><span>Deposito:</span> <strong id="rec-storage"></strong></div>
-                    <div class="receipt-row"><span>Data:</span> <strong id="rec-date" style="color:#2ca5ff; font-size:1.2rem;"></strong></div>
-                    <div class="receipt-row"><span>Ora:</span> <strong id="rec-time" style="color:#2ca5ff; font-size:1.2rem;"></strong></div>
-                    <p style="font-size:0.8rem; color:#888; margin-top:20px; text-align:center;">Email di riepilogo inviata a: <span id="rec-email"></span></p>
+                    <div class="receipt-row"><span>Data:</span> <strong id="rec-date"
+                            style="color:#2ca5ff; font-size:1.2rem;"></strong></div>
+                    <div class="receipt-row"><span>Ora:</span> <strong id="rec-time"
+                            style="color:#2ca5ff; font-size:1.2rem;"></strong></div>
+                    <p style="font-size:0.8rem; color:#888; margin-top:20px; text-align:center;">Email di riepilogo
+                        inviata a: <span id="rec-email"></span></p>
                 </div>
                 <button onclick="window.location.reload()" class="btn-new">Nuova Prenotazione</button>
                 <a href="index.html" class="btn-home">Torna alla Home</a>
@@ -150,8 +175,11 @@
                 <p>Contatti:</p>
                 <div class="help-grid">
                     <div class="help-item"></i> <a href="tel:0883885558">Telefono</a></div>
-                    <div class="help-item"></i> <a href="https://www.google.com/maps/search/?api=1&query=D.R.+Pneumatici+Via+Corato+64+Andria" target="_blank">Via Corato, 64/66</a></div>
-                    <div class="help-item"></i> <a href="mailto:dr.penumatici.snc@gmail.com?subject=ASSISTENZA PRENOTAZIONE">E-mail</a></div>
+                    <div class="help-item"></i> <a
+                            href="https://www.google.com/maps/search/?api=1&query=D.R.+Pneumatici+Via+Corato+64+Andria"
+                            target="_blank">Via Corato, 64/66</a></div>
+                    <div class="help-item"></i> <a
+                            href="mailto:dr.penumatici.snc@gmail.com?subject=ASSISTENZA PRENOTAZIONE">E-mail</a></div>
                 </div>
             </div>
         </div>
@@ -163,4 +191,5 @@
     <script src="script.js"></script>
 
 </body>
+
 </html>

@@ -295,6 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dataObj = {
                     nome: nome, cognome: cognome, email: email, telefono: tel,
                     servizio: serv, deposito: storageCheck.checked,
+                    targa: storageCheck.checked ? (targaInput ? targaInput.value.trim().toUpperCase() : '') : '',
                     data: data, ora: orario, 
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     calendar_link: `https://www.google.com/calendar/render?action=TEMPLATE&text=DR%20Pneumatici&dates=${data.replace(/-/g,'')}T${orario.replace(':','')}00/${data.replace(/-/g,'')}T${(parseInt(orario)+1)}0000&details=${serv}&location=Via%20Corato%2064`
