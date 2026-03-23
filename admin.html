@@ -197,8 +197,8 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Helper globale: prima lettera maiuscola per ogni parola
-        const cap = s => (s || '').replace(/\b\w/g, c => c.toUpperCase());
+        // Helper globale: prima lettera maiuscola per ogni parola (normalizza anche maiuscole/minuscole)
+        const cap = s => (s || '').replace(/\S+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 
         let currentDate = new Date();
         
@@ -511,6 +511,12 @@
                     // Forza maiuscolo sulla targa live
                     const targaInp = document.getElementById('sw-targa');
                     targaInp.addEventListener('input', function() { this.value = this.value.replace(/\s+/g, '').toUpperCase(); });
+                    // Capitalizza nome e cognome live (prima lettera maiuscola per ogni parola)
+                    ['sw-nome', 'sw-cognome'].forEach(id => {
+                        document.getElementById(id).addEventListener('blur', function() {
+                            this.value = cap(this.value.trim());
+                        });
+                    });
                 },
                 preConfirm: () => {
                     const targa   = document.getElementById('sw-targa').value.replace(/\s+/g, '').toUpperCase();
