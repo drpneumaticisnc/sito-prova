@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- FORMATTAZIONE TARGA IN MAIUSCOLO ---
     if (targaInput) {
         targaInput.addEventListener('input', function() {
-            this.value = this.value.toUpperCase();
+            this.value = this.value.replace(/\s+/g, '').toUpperCase();
         });
         targaInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {

@@ -472,7 +472,7 @@
         function filtraMagazzino() {
             const cli = document.getElementById('search-mag-cli').value.toLowerCase();
             const mis = document.getElementById('search-mag-mis').value.toLowerCase();
-            const tar = document.getElementById('search-mag-targa').value.toUpperCase().trim();
+            const tar = document.getElementById('search-mag-targa').value.replace(/\s+/g, '').toUpperCase();
             const filtered = allMagazzino.filter(item => {
                 const matchNome = (item.nome + " " + item.cognome).toLowerCase().includes(cli);
                 const dbMisura = item.misura.replace(/\s/g, '').toLowerCase();
@@ -510,10 +510,10 @@
                     formattaMisuraLive(inp);
                     // Forza maiuscolo sulla targa live
                     const targaInp = document.getElementById('sw-targa');
-                    targaInp.addEventListener('input', function() { this.value = this.value.toUpperCase(); });
+                    targaInp.addEventListener('input', function() { this.value = this.value.replace(/\s+/g, '').toUpperCase(); });
                 },
                 preConfirm: () => {
-                    const targa   = document.getElementById('sw-targa').value.trim().toUpperCase();
+                    const targa   = document.getElementById('sw-targa').value.replace(/\s+/g, '').toUpperCase();
                     const nome    = cap(document.getElementById('sw-nome').value.trim());
                     const cognome = cap(document.getElementById('sw-cognome').value.trim());
                     const misura  = document.getElementById('sw-misura').value.trim();
