@@ -33,16 +33,15 @@
         .date-nav { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .nav-arrow { background: var(--concrete-grey); border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        .time-row { display: flex; margin-bottom: 12px; align-items: stretch; } /* stretch per altezza uguale */
+        .time-row { display: flex; margin-bottom: 12px; align-items: stretch; }
         .time-col { width: 50px; font-weight: 700; color: #888; font-size: 0.9rem; padding-top: 10px; }
         .slots-area { flex: 1; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
         
         .slot { 
             flex: 1; min-width: 160px; padding: 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; position: relative;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; display: flex; flex-direction: column; justify-content: center;
-            /* MODIFICA: Permette al testo di andare a capo per mostrare più info */
             white-space: normal; 
-            min-height: 80px; /* Altezza minima per contenere i dati */
+            min-height: 80px;
         }
         .slot:active { transform: scale(0.98); }
         .slot.empty { background: white; border: 2px dashed #ddd; color: #aaa; align-items: center; justify-content: center; min-height: 60px;}
@@ -197,12 +196,10 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Helper globale: prima lettera maiuscola per ogni parola (normalizza anche maiuscole/minuscole)
         const cap = s => (s || '').replace(/\S+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 
         let currentDate = new Date();
         
-        // --- SICUREZZA ---
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -213,7 +210,6 @@
         async function checkPass() {
             const inputPass = document.getElementById('admin-pass').value;
             const correctHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
-            
             try {
                 const inputHash = await sha256(inputPass);
                 if(inputHash === correctHash) {
@@ -231,7 +227,6 @@
             }
         }
 
-        // --- FORMATTAZIONE MISURA ---
         function formattaMisuraLive(inputElement) {
             inputElement.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, ''); 
@@ -245,7 +240,6 @@
         }
         document.addEventListener('DOMContentLoaded', () => { formattaMisuraLive(document.getElementById('search-mag-mis')); });
 
-        // --- NAVIGAZIONE ---
         function switchTab(tab) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -256,7 +250,6 @@
             if(tab === 'clienti') caricaClienti();
         }
 
-        // --- AGENDA ---
         function goToToday() {
             const iso = new Date().toISOString().split('T')[0];
             document.getElementById('date-trigger').value = iso;
@@ -285,17 +278,14 @@
                 ? ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00"]
                 : ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"];
 
-            // 1. Ascolta Prenotazioni
             db.collection("prenotazioni").where("data", "==", iso).onSnapshot(async snap => {
                 let list = [];
                 snap.forEach(doc => list.push({id: doc.id, ...doc.data()}));
 
-                // 2. Recupera Magazzino per associare le gomme
                 let depMap = {};
                 const depSnap = await db.collection("deposito").get();
                 depSnap.forEach(doc => {
                     const d = doc.data();
-                    // Indicizzato sia per nome+cognome (fallback) che per targa
                     const key = (d.nome + " " + d.cognome).toLowerCase().trim();
                     depMap[key] = d;
                     if (d.targa) depMap['targa:' + d.targa.toUpperCase()] = d;
@@ -313,16 +303,16 @@
                         if(p.tipo === 'blocco') {
                             contenuto = '<i class="fas fa-lock"></i> CHIUSO';
                         } else {
-                            // Cerca info gomme se deposito è true
                             let gommeInfo = "";
                             if(p.deposito) {
-                                // Prima cerca per targa (se salvata nella prenotazione), poi per nome+cognome
                                 const keyTarga = p.targa ? 'targa:' + p.targa.toUpperCase() : null;
                                 const keyNome  = (p.nome + " " + p.cognome).toLowerCase().trim();
                                 const gomme    = (keyTarga && depMap[keyTarga]) || depMap[keyNome];
                                 if(gomme) {
                                     const targaLabel = gomme.targa ? ` • 🚗 ${gomme.targa}` : '';
-                                    gommeInfo = `<div class="slot-tyres"><i class="fas fa-truck-loading"></i> ${gomme.misura}${targaLabel}</div>`;
+                                    const qtyLabel   = gomme.quantita ? ` (${gomme.quantita})` : '';
+                                    const noteLabel  = gomme.note ? `<div style="font-size:0.7rem; color:#777; font-style:italic; margin-top:2px;">📝 ${gomme.note}</div>` : '';
+                                    gommeInfo = `<div class="slot-tyres"><i class="fas fa-truck-loading"></i> ${gomme.misura}${qtyLabel}${targaLabel}</div>${noteLabel}`;
                                 } else {
                                     gommeInfo = `<div class="slot-tyres" style="color:red">Gomme non trovate</div>`;
                                 }
@@ -354,7 +344,6 @@
             });
         }
 
-        // --- GESTIONE CLICK ---
         function gestisciVuoto(data, ora) {
             Swal.fire({
                 title: `Ore ${ora}`, text: "Scegli azione:", icon: 'question',
@@ -437,7 +426,6 @@
             });
         }
 
-        // --- MAGAZZINO & CLIENTI ---
         let allMagazzino = [];
         function caricaMagazzino() {
             document.getElementById('magazzino-list').innerHTML = '<p style="text-align:center;">Caricamento...</p>';
@@ -508,10 +496,8 @@
                 didOpen: () => {
                     const inp = document.getElementById('sw-misura');
                     formattaMisuraLive(inp);
-                    // Forza maiuscolo sulla targa live
                     const targaInp = document.getElementById('sw-targa');
                     targaInp.addEventListener('input', function() { this.value = this.value.replace(/\s+/g, '').toUpperCase(); });
-                    // Capitalizza nome e cognome live (prima lettera maiuscola per ogni parola)
                     ['sw-nome', 'sw-cognome'].forEach(id => {
                         document.getElementById(id).addEventListener('blur', function() {
                             this.value = cap(this.value.trim());
@@ -527,7 +513,6 @@
                     const stagione= document.getElementById('sw-stagione').value;
                     const qty     = document.getElementById('sw-qty').value;
 
-                    // Validazione campi obbligatori
                     const mancanti = [];
                     if (!targa)   mancanti.push('Targa');
                     if (!nome)    mancanti.push('Nome');
@@ -556,7 +541,6 @@
                 }
             });
             if (formValues) {
-                // Controllo targa duplicata solo su nuovo inserimento
                 if (!isEdit) {
                     const esistente = allMagazzino.find(i => (i.targa || '').toUpperCase() === formValues.targa);
                     if (esistente) {
