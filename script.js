@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const docData = snap.docs[0].data();
                     const nomeCliente = (docData.nome || '') + ' ' + (docData.cognome || '');
                     const misura = docData.misura || 'N/D';
+                    const misura2 = (docData.misura2 && docData.misura2.trim() !== "") ? ' + ' + docData.misura2 : '';
                     const quantita = docData.quantita ? ' (n° ' + docData.quantita + ')' : '';
 
                     msgVerifica.innerHTML = "✅ Gomme trovate! Puoi procedere.";
@@ -125,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // Mostra i dati trovati
                     document.getElementById('dep-res-cliente').textContent = nomeCliente.trim();
-                    document.getElementById('dep-res-misura').textContent = misura + quantita;
+                    document.getElementById('dep-res-misura').textContent = misura + misura2 + quantita;
                     document.getElementById('deposito-result').style.display = 'block';
 
                     isStorageVerified = true;
