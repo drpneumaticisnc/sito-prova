@@ -310,9 +310,11 @@
                                 const gomme    = (keyTarga && depMap[keyTarga]) || depMap[keyNome];
                                 if(gomme) {
                                     const targaLabel = gomme.targa ? ` • 🚗 ${gomme.targa}` : '';
-                                    const qtyLabel   = gomme.quantita ? ` (${gomme.quantita})` : '';
+                                    const qtyLabel   = gomme.quantita ? ` (n.${gomme.quantita})` : '';
                                     const noteLabel  = gomme.note ? `<div style="font-size:0.7rem; color:#777; font-style:italic; margin-top:2px;">📝 ${gomme.note}</div>` : '';
-                                    gommeInfo = `<div class="slot-tyres"><i class="fas fa-truck-loading"></i> ${gomme.misura}${qtyLabel}${targaLabel}</div>${noteLabel}`;
+                                    // ↓ MODIFICA: mostra misura2 separata da + se presente
+                                    const misuraLabel = gomme.misura2 ? `${gomme.misura} + ${gomme.misura2}` : gomme.misura;
+                                    gommeInfo = `<div class="slot-tyres"><i class="fas fa-truck-loading"></i> ${misuraLabel}${qtyLabel}${targaLabel}</div>${noteLabel}`;
                                 } else {
                                     gommeInfo = `<div class="slot-tyres" style="color:red">Gomme non trovate</div>`;
                                 }
@@ -440,12 +442,14 @@
             let html = "";
             list.forEach(item => {
                 let itemStr = encodeURIComponent(JSON.stringify(item));
+                // ↓ MODIFICA: mostra misura2 separata da + se presente
+                const misuraDisplay = item.misura2 ? `${item.misura} <span style="color:var(--accent)">+</span> ${item.misura2}` : item.misura;
                 html += `
                     <div class="item-card magazzino">
                         <div class="item-info">
                             <h4>${cap(item.cognome)} ${cap(item.nome)}</h4>
                             <p style="font-size:0.95rem; font-weight:700; color:var(--accent);">🚗 Targa: ${item.targa || '—'}</p>
-                            <p><b>${item.misura}</b> • ${item.brand}</p>
+                            <p><b>${misuraDisplay}</b> • ${item.brand}</p>
                             <p>${item.stagione} (Qta: ${item.quantita})</p>
                             <p style="font-size:0.75rem; color:#999;">${item.note || ''}</p>
                         </div>
@@ -465,7 +469,9 @@
                 const matchNome = (item.nome + " " + item.cognome).toLowerCase().includes(cli);
                 const dbMisura = item.misura.replace(/\s/g, '').toLowerCase();
                 const searchMisura = mis.replace(/\s/g, '').toLowerCase();
-                const matchMisura = dbMisura.includes(searchMisura);
+                // ↓ MODIFICA: cerca anche in misura2
+                const dbMisura2 = (item.misura2 || '').replace(/\s/g, '').toLowerCase();
+                const matchMisura = dbMisura.includes(searchMisura) || dbMisura2.includes(searchMisura);
                 const matchTarga = !tar || (item.targa || '').toUpperCase().includes(tar);
                 return matchNome && matchMisura && matchTarga;
             });
@@ -482,6 +488,7 @@
                     <input id="sw-nome" class="swal2-input" placeholder="Nome *" value="${item ? item.nome : ''}">
                     <input id="sw-cognome" class="swal2-input" placeholder="Cognome *" value="${item ? item.cognome : ''}">
                     <input id="sw-misura" class="swal2-input" placeholder="Misura * (es 2055516)" value="${item ? item.misura : ''}">
+                    <input id="sw-misura2" class="swal2-input" placeholder="2ª Misura" value="${item && item.misura2 ? item.misura2 : ''}">
                     <input id="sw-brand" class="swal2-input" placeholder="Marca *" value="${item ? item.brand : ''}">
                     <select id="sw-stagione" class="swal2-input">
                         <option value="">Seleziona stagione *</option>
@@ -494,8 +501,9 @@
                 `,
                 focusConfirm: false,
                 didOpen: () => {
-                    const inp = document.getElementById('sw-misura');
-                    formattaMisuraLive(inp);
+                    // ↓ MODIFICA: formattazione live su entrambe le misure
+                    formattaMisuraLive(document.getElementById('sw-misura'));
+                    formattaMisuraLive(document.getElementById('sw-misura2'));
                     const targaInp = document.getElementById('sw-targa');
                     targaInp.addEventListener('input', function() { this.value = this.value.replace(/\s+/g, '').toUpperCase(); });
                     ['sw-nome', 'sw-cognome'].forEach(id => {
@@ -509,6 +517,8 @@
                     const nome    = cap(document.getElementById('sw-nome').value.trim());
                     const cognome = cap(document.getElementById('sw-cognome').value.trim());
                     const misura  = document.getElementById('sw-misura').value.trim();
+                    // ↓ MODIFICA: leggi misura2 (facoltativa, stringa vuota se non compilata)
+                    const misura2 = document.getElementById('sw-misura2').value.trim();
                     const brand   = document.getElementById('sw-brand').value.trim();
                     const stagione= document.getElementById('sw-stagione').value;
                     const qty     = document.getElementById('sw-qty').value;
@@ -532,6 +542,7 @@
                         nome:     nome,
                         cognome:  cognome,
                         misura:   misura,
+                        misura2:  misura2,   // ↓ MODIFICA: salvato in Firestore (vuoto se non inserito)
                         brand:    brand.toUpperCase(),
                         stagione: stagione,
                         quantita: qty,
