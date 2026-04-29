@@ -125,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     msgVerifica.style.color = "green";
 
                     // Mostra i dati trovati
-                    document.getElementById('dep-res-cliente').textContent = nomeCliente.trim();
                     document.getElementById('dep-res-misura').textContent = misura + misura2 + quantita;
                     document.getElementById('deposito-result').style.display = 'block';
 
