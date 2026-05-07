@@ -312,7 +312,6 @@
                                     const targaLabel = gomme.targa ? ` • 🚗 ${gomme.targa}` : '';
                                     const qtyLabel   = gomme.quantita ? ` (n.${gomme.quantita})` : '';
                                     const noteLabel  = gomme.note ? `<div style="font-size:0.7rem; color:#777; font-style:italic; margin-top:2px;">📝 ${gomme.note}</div>` : '';
-                                    // ↓ MODIFICA: mostra misura2 separata da + se presente
                                     const misuraLabel = gomme.misura2 ? `${gomme.misura} + ${gomme.misura2}` : gomme.misura;
                                     gommeInfo = `<div class="slot-tyres"><i class="fas fa-truck-loading"></i> ${misuraLabel}${qtyLabel}${targaLabel}</div>${noteLabel}`;
                                 } else {
@@ -442,7 +441,6 @@
             let html = "";
             list.forEach(item => {
                 let itemStr = encodeURIComponent(JSON.stringify(item));
-                // ↓ MODIFICA: mostra misura2 separata da + se presente
                 const misuraDisplay = item.misura2 ? `${item.misura} <span style="color:var(--accent)">+</span> ${item.misura2}` : item.misura;
                 html += `
                     <div class="item-card magazzino">
@@ -469,7 +467,6 @@
                 const matchNome = (item.nome + " " + item.cognome).toLowerCase().includes(cli);
                 const dbMisura = item.misura.replace(/\s/g, '').toLowerCase();
                 const searchMisura = mis.replace(/\s/g, '').toLowerCase();
-                // ↓ MODIFICA: cerca anche in misura2
                 const dbMisura2 = (item.misura2 || '').replace(/\s/g, '').toLowerCase();
                 const matchMisura = dbMisura.includes(searchMisura) || dbMisura2.includes(searchMisura);
                 const matchTarga = !tar || (item.targa || '').toUpperCase().includes(tar);
@@ -477,81 +474,130 @@
             });
             renderMagazzino(filtered);
         }
+
         async function openModalMagazzino(itemEncoded = null) {
             let item = itemEncoded ? JSON.parse(decodeURIComponent(itemEncoded)) : null;
             let isEdit = !!item;
-            const { value: formValues } = await Swal.fire({
-                title: isEdit ? 'Modifica Gomme' : 'Nuovo Deposito',
-                showCloseButton: true,
-                html: `
-                    <input id="sw-targa" class="swal2-input" placeholder="Targa *  (es. AB123CD)" value="${item && item.targa ? item.targa.toUpperCase() : ''}">
-                    <input id="sw-nome" class="swal2-input" placeholder="Nome *" value="${item ? item.nome : ''}">
-                    <input id="sw-cognome" class="swal2-input" placeholder="Cognome *" value="${item ? item.cognome : ''}">
-                    <input id="sw-misura" class="swal2-input" placeholder="Misura * (es 2055516)" value="${item ? item.misura : ''}">
-                    <input id="sw-misura2" class="swal2-input" placeholder="2ª Misura (facoltativo)" value="${item && item.misura2 ? item.misura2 : ''}">
-                    <input id="sw-brand" class="swal2-input" placeholder="Marca *" value="${item ? item.brand : ''}">
-                    <select id="sw-stagione" class="swal2-input">
-                        <option value="">Seleziona stagione *</option>
-                        <option value="Estive" ${item && item.stagione==='Estive'?'selected':''}>Estive</option>
-                        <option value="Invernali" ${item && item.stagione==='Invernali'?'selected':''}>Invernali</option>
-                        <option value="4 Stagioni" ${item && item.stagione==='4 Stagioni'?'selected':''}>4 Stagioni</option>
-                    </select>
-                    <input id="sw-qty" type="number" min="1" class="swal2-input" placeholder="Quantità *" value="${item ? item.quantita : 4}">
-                    <input id="sw-note" class="swal2-input" placeholder="Note (facoltativo)" value="${item && item.note ? item.note : ''}">
-                `,
-                focusConfirm: false,
-                didOpen: () => {
-                    // ↓ MODIFICA: formattazione live su entrambe le misure
-                    formattaMisuraLive(document.getElementById('sw-misura'));
-                    formattaMisuraLive(document.getElementById('sw-misura2'));
-                    const targaInp = document.getElementById('sw-targa');
-                    targaInp.addEventListener('input', function() { this.value = this.value.replace(/\s+/g, '').toUpperCase(); });
-                    ['sw-nome', 'sw-cognome'].forEach(id => {
-                        document.getElementById(id).addEventListener('blur', function() {
-                            this.value = cap(this.value.trim());
+            const targaOriginale = isEdit ? (item.targa || '').toUpperCase() : null;
+
+            // ↓ MODIFICA: misura2 visibile subito se già presente, altrimenti nascosta
+            const misura2Iniziale = item && item.misura2 ? item.misura2 : '';
+            const misura2Visibile = !!misura2Iniziale;
+
+            while (true) {
+                const { value: formValues, isDismissed } = await Swal.fire({
+                    title: isEdit ? 'Modifica Gomme' : 'Nuovo Deposito',
+                    showCloseButton: true,
+                    html: `
+                        <input id="sw-targa" class="swal2-input" placeholder="Targa *  (es. AB123CD)" value="${item && item.targa ? item.targa.toUpperCase() : ''}">
+                        <input id="sw-nome" class="swal2-input" placeholder="Nome *" value="${item ? item.nome : ''}">
+                        <input id="sw-cognome" class="swal2-input" placeholder="Cognome *" value="${item ? item.cognome : ''}">
+
+                        <!-- ↓ MODIFICA: riga misura1 + bottone + -->
+                        <div style="display:flex; align-items:center; gap:6px; margin: 4px 0;">
+                            <input id="sw-misura" class="swal2-input" style="margin-left:85;" placeholder="Misura * (es 2055516)" value="${item ? item.misura : ''}">
+                            <button type="button" id="btn-add-misura2" style="display:${misura2Visibile ? 'none' : 'flex'}; width:34px; height:34px; min-width:34px; border-radius:50%; background:#2ca5ff; color:white; border:none; font-size:1.3rem; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">+</button>
+                        </div>
+
+                        <!-- ↓ MODIFICA: riga misura2 + bottone -, visibile solo se misura2 presente -->
+                        <div id="row-misura2" style="display:${misura2Visibile ? 'flex' : 'none'}; align-items:center; gap:6px; margin: 4px 0;">
+                            <input id="sw-misura2" class="swal2-input" style="margin-left:85;" placeholder="2ª Misura (es 2256017)" value="${misura2Iniziale}">
+                            <button type="button" id="btn-rm-misura2" style="width:34px; height:34px; min-width:34px; border-radius:50%; background:#ff7675; color:white; border:none; font-size:1.3rem; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">−</button>
+                        </div>
+
+                        <input id="sw-brand" class="swal2-input" placeholder="Marca *" value="${item ? item.brand : ''}">
+                        <select id="sw-stagione" class="swal2-input">
+                            <option value="">Seleziona stagione *</option>
+                            <option value="Estive" ${item && item.stagione==='Estive'?'selected':''}>Estive</option>
+                            <option value="Invernali" ${item && item.stagione==='Invernali'?'selected':''}>Invernali</option>
+                            <option value="4 Stagioni" ${item && item.stagione==='4 Stagioni'?'selected':''}>4 Stagioni</option>
+                        </select>
+                        <input id="sw-qty" type="number" min="1" class="swal2-input" placeholder="Quantità *" value="${item ? item.quantita : 4}">
+                        <input id="sw-note" class="swal2-input" placeholder="Note (facoltativo)" value="${item && item.note ? item.note : ''}">
+                    `,
+                    focusConfirm: false,
+                    didOpen: () => {
+                        formattaMisuraLive(document.getElementById('sw-misura'));
+                        formattaMisuraLive(document.getElementById('sw-misura2'));
+                        const targaInp = document.getElementById('sw-targa');
+                        targaInp.addEventListener('input', function() { this.value = this.value.replace(/\s+/g, '').toUpperCase(); });
+                        ['sw-nome', 'sw-cognome'].forEach(id => {
+                            document.getElementById(id).addEventListener('blur', function() {
+                                this.value = cap(this.value.trim());
+                            });
                         });
-                    });
-                },
-                preConfirm: () => {
-                    const targa   = document.getElementById('sw-targa').value.replace(/\s+/g, '').toUpperCase();
-                    const nome    = cap(document.getElementById('sw-nome').value.trim());
-                    const cognome = cap(document.getElementById('sw-cognome').value.trim());
-                    const misura  = document.getElementById('sw-misura').value.trim();
-                    // ↓ MODIFICA: leggi misura2 (facoltativa, stringa vuota se non compilata)
-                    const misura2 = document.getElementById('sw-misura2').value.trim();
-                    const brand   = document.getElementById('sw-brand').value.trim();
-                    const stagione= document.getElementById('sw-stagione').value;
-                    const qty     = document.getElementById('sw-qty').value;
 
-                    const mancanti = [];
-                    if (!targa)   mancanti.push('Targa');
-                    if (!nome)    mancanti.push('Nome');
-                    if (!cognome) mancanti.push('Cognome');
-                    if (!misura)  mancanti.push('Misura');
-                    if (!brand)   mancanti.push('Marca');
-                    if (!stagione) mancanti.push('Stagione');
-                    if (!qty || qty < 1) mancanti.push('Quantità');
+                        // ↓ MODIFICA: click + mostra la riga misura2 e nasconde il +
+                        document.getElementById('btn-add-misura2').addEventListener('click', function() {
+                            document.getElementById('row-misura2').style.display = 'flex';
+                            this.style.display = 'none';
+                        });
 
-                    if (mancanti.length > 0) {
-                        Swal.showValidationMessage(`⚠️ Campi obbligatori mancanti: ${mancanti.join(', ')}`);
-                        return false;
+                        // ↓ MODIFICA: click − nasconde misura2 solo se vuota, altrimenti non fa nulla
+                        document.getElementById('btn-rm-misura2').addEventListener('click', function() {
+                            const val = document.getElementById('sw-misura2').value.trim();
+                            if (val === '') {
+                                document.getElementById('row-misura2').style.display = 'none';
+                                document.getElementById('btn-add-misura2').style.display = 'flex';
+                            }
+                        });
+                    },
+                    preConfirm: () => {
+                        const targa   = document.getElementById('sw-targa').value.replace(/\s+/g, '').toUpperCase();
+                        const nome    = cap(document.getElementById('sw-nome').value.trim());
+                        const cognome = cap(document.getElementById('sw-cognome').value.trim());
+                        const misura  = document.getElementById('sw-misura').value.trim();
+                        // ↓ misura2 vale solo se la riga è visibile
+                        const misura2Row = document.getElementById('row-misura2');
+                        const misura2 = misura2Row.style.display !== 'none' ? document.getElementById('sw-misura2').value.trim() : '';
+                        const brand   = document.getElementById('sw-brand').value.trim();
+                        const stagione= document.getElementById('sw-stagione').value;
+                        const qty     = document.getElementById('sw-qty').value;
+
+                        const mancanti = [];
+                        if (!targa)    mancanti.push('Targa');
+                        if (!nome)     mancanti.push('Nome');
+                        if (!cognome)  mancanti.push('Cognome');
+                        if (!misura)   mancanti.push('Misura');
+                        if (!brand)    mancanti.push('Marca');
+                        if (!stagione) mancanti.push('Stagione');
+                        if (!qty || qty < 1) mancanti.push('Quantità');
+
+                        if (mancanti.length > 0) {
+                            Swal.showValidationMessage(`⚠️ Campi obbligatori mancanti: ${mancanti.join(', ')}`);
+                            return false;
+                        }
+
+                        return {
+                            targa, nome, cognome, misura, misura2,
+                            brand: brand.toUpperCase(), stagione, quantita: qty,
+                            note: document.getElementById('sw-note').value.trim(),
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        };
                     }
+                });
 
-                    return {
-                        targa:    targa,
-                        nome:     nome,
-                        cognome:  cognome,
-                        misura:   misura,
-                        misura2:  misura2,   // ↓ MODIFICA: salvato in Firestore (vuoto se non inserito)
-                        brand:    brand.toUpperCase(),
-                        stagione: stagione,
-                        quantita: qty,
-                        note:     document.getElementById('sw-note').value.trim(),
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    };
+                if (isDismissed || !formValues) return;
+
+                // chiedi conferma targa solo se nuovo deposito o targa cambiata
+                const targaCambiata = !isEdit || formValues.targa !== targaOriginale;
+                if (targaCambiata) {
+                    const conferma = await Swal.fire({
+                        title: 'Conferma Targa',
+                        html: `La targa inserita è <span style="color:#2ca5ff; font-size:1.3rem; font-weight:900; letter-spacing:2px;">${formValues.targa}</span> è corretta?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sì, è corretta',
+                        cancelButtonText: 'No, correggi',
+                        confirmButtonColor: '#2ca5ff'
+                    });
+
+                    if (!conferma.isConfirmed) {
+                        item = { ...item, ...formValues };
+                        continue;
+                    }
                 }
-            });
-            if (formValues) {
+
                 if (!isEdit) {
                     const esistente = allMagazzino.find(i => (i.targa || '').toUpperCase() === formValues.targa);
                     if (esistente) {
@@ -570,10 +616,12 @@
                         return;
                     }
                 }
+
                 let promise = isEdit
                     ? db.collection("deposito").doc(item.id).update(formValues)
                     : db.collection("deposito").add(formValues);
                 promise.then(() => { Swal.fire('Salvato!', '', 'success'); caricaMagazzino(); });
+                return;
             }
         }
 
