@@ -110,7 +110,7 @@
 <body>
 
     <div id="login-overlay">
-        <h2 style="color:white; margin-bottom:20px;">Admin System</h2>
+        <h2 style="color:white; margin-bottom:20px;">GESTIONALE</h2>
         <div class="login-box">
             <form onsubmit="event.preventDefault(); checkPass();">
                 <input type="password" id="admin-pass" placeholder="Codice Accesso">
@@ -245,7 +245,8 @@
             "MICHELIN",
             "TRAZANO",
             "STRARMAXX",
-            "GRIPMAX"
+            "GRIPMAX",
+            "TOYO"
         ];
 
         // ↓ MODIFICA: funzione che inizializza il dropdown brand custom su un input dato
@@ -658,7 +659,7 @@
                         formattaMisuraLive(document.getElementById('sw-misura'));
                         formattaMisuraLive(document.getElementById('sw-misura2'));
                         const targaInp = document.getElementById('sw-targa');
-                        targaInp.addEventListener('input', function() { this.value = this.value.replace(/\s+/g, '').toUpperCase(); });
+                        targaInp.addEventListener('input', function() { this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(); });
                         ['sw-nome', 'sw-cognome'].forEach(id => {
                             document.getElementById(id).addEventListener('blur', function() {
                                 this.value = cap(this.value.trim());

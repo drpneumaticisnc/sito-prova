@@ -5,13 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prenotazione - D.R. PNEUMATICI</title>
-    <meta name="description" content="Prenota online il tuo appuntamento da D.R. Pneumatici. Scegli data, ora e servizio direttamente dal tuo smartphone. Prenota ora!">
-    <meta name="keywords" content="prenotazione gommista Andria, appuntamento D.R. Pneumatici, prenota cambio gomme, prenota convergenza online">
+    <meta name="description"
+        content="Prenota online il tuo appuntamento da D.R. Pneumatici. Scegli data, ora e servizio direttamente dal tuo smartphone. Prenota ora!">
+    <meta name="keywords"
+        content="prenotazione gommista Andria, appuntamento D.R. Pneumatici, prenota cambio gomme, prenota convergenza online">
     <meta name="author" content="D.R. Pneumatici">
     <meta name="robots" content="index, follow">
 
     <meta property="og:title" content="Prenota il tuo intervento - D.R. Pneumatici">
-    <meta property="og:description" content="Cambio gomme o convergenza? Fissa il tuo appuntamento online in pochi clic e verifica le tue gomme in deposito.">
+    <meta property="og:description"
+        content="Cambio gomme o convergenza? Fissa il tuo appuntamento online in pochi clic e verifica le tue gomme in deposito.">
     <meta property="og:image" content="logo finale 2.png">
     <meta property="og:url" content="https://www.drpneumatici.it/prenotazione.html">
     <meta property="og:type" content="website">
@@ -80,15 +83,15 @@
                     <p style="margin:0 0 10px 0; font-size:0.9rem; font-weight:bold; color:#0a2342;">
                         <i class="fas fa-search"></i> Verifica disponibilità magazzino:
                     </p>
-                    <div class="form-row" style="align-items: flex-end;">
-                        <div class="form-group half" style="margin-bottom:0;">
-                            <input type="text" id="dep-targa" placeholder="Targa (es. AB123CD)"
-                                style="text-transform:uppercase;">
-                        </div>
-                        <div class="form-group half" style="margin-bottom:0;">
-                            <button type="button" id="btn-verifica-gomme"
-                                style="width:100%; background:#2ca5ff; color:white; border:none; padding:18px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:1rem;">VERIFICA</button>
-                        </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <input type="text" id="dep-targa" placeholder="targa (es. AB123CD)"
+                            style="text-transform:uppercase; width:100%;"
+                            oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase()">
+                        <small style="display:block; margin-top:5px; color:#888; font-size:0.8rem;">
+                            ⚠️ Inserisci solo lettere e cifre.
+                        </small>
+                        <button type="button" id="btn-verifica-gomme"
+                            style="width:100%; background:#2ca5ff; color:white; border:none; padding:18px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:1rem; margin-top:10px;">VERIFICA</button>
                     </div>
                     <p id="msg-verifica" style="font-size:0.9rem; margin-top:10px; font-weight:bold; min-height: 10px;">
                     </p>
@@ -174,7 +177,8 @@
                             style="color:#2ca5ff; font-size:1.2rem;"></strong></div>
                     <p style="font-size:0.8rem; color:#888; margin-top:20px; text-align:center;">Email di riepilogo
                         inviata a: <span id="rec-email"></span></p>
-                    <p style="font-size:0.8rem; color:#ff0101; margin-top:20px; text-align:center;">L'EMAIL POTREBBE TROVARSI IN POSTA INDESIDERATA (SPAM) </p>
+                    <p style="font-size:0.8rem; color:#ff0101; margin-top:20px; text-align:center;">L'EMAIL POTREBBE
+                        TROVARSI IN POSTA INDESIDERATA (SPAM) </p>
                 </div>
                 <button onclick="window.location.reload()" class="btn-new">Nuova Prenotazione</button>
                 <a href="index.html" class="btn-home">Torna alla Home</a>
