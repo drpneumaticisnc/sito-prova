@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,105 +9,485 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <style>
-        :root { --primary: #0a2342; --accent: #2ca5ff; --bg: #f4f6f8; --white: #fff; --text: #2d3436; --danger: #e74c3c; --success: #2ecc71; --warning: #f1c40f; }
-        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: var(--text); }
+        :root {
+            --primary: #0a2342;
+            --accent: #2ca5ff;
+            --bg: #f4f6f8;
+            --white: #fff;
+            --text: #2d3436;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+        }
+
+        * {
+            box-sizing: border-box;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding-bottom: 90px;
+            color: var(--text);
+        }
 
         /* HEADER */
-        .header { background: var(--primary); color: white; padding: 15px 20px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .header h2 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
-        .logout-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
 
         /* NAVIGAZIONE */
-        .nav-tabs { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; z-index: 900; height: 70px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .tab-btn { flex: 1; border: none; background: none; color: #999; font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.2s; }
-        .tab-btn i { font-size: 1.4rem; margin-bottom: 5px; }
-        .tab-btn.active { color: var(--primary); font-weight: 800; background: #f0f8ff; }
+        .nav-tabs {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            border-top: 1px solid #ddd;
+            z-index: 900;
+            height: 70px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: none;
+            color: #999;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .tab-btn i {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            font-weight: 800;
+            background: #f0f8ff;
+        }
 
         /* SEZIONI */
-        .view-section { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; }
-        .view-section.active { display: block; }
+        .view-section {
+            display: none;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .view-section.active {
+            display: block;
+        }
 
         /* --- AGENDA --- */
-        .date-nav { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .nav-arrow { background: var(--concrete-grey); border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        
-        .time-row { display: flex; margin-bottom: 12px; align-items: stretch; }
-        .time-col { width: 50px; font-weight: 700; color: #888; font-size: 0.9rem; padding-top: 10px; }
-        .slots-area { flex: 1; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
-        
-        .slot { 
-            flex: 1; min-width: 160px; padding: 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; position: relative;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.1s; display: flex; flex-direction: column; justify-content: center;
-            white-space: normal; 
+        .date-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-arrow {
+            background: var(--concrete-grey);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            color: var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .time-row {
+            display: flex;
+            margin-bottom: 12px;
+            align-items: stretch;
+        }
+
+        .time-col {
+            width: 50px;
+            font-weight: 700;
+            color: #888;
+            font-size: 0.9rem;
+            padding-top: 10px;
+        }
+
+        .slots-area {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .slot {
+            flex: 1;
+            min-width: 160px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.1s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            white-space: normal;
             min-height: 80px;
         }
-        .slot:active { transform: scale(0.98); }
-        .slot.empty { background: white; border: 2px dashed #ddd; color: #aaa; align-items: center; justify-content: center; min-height: 60px;}
-        .slot.client { background: #e3f2fd; border-left: 5px solid var(--accent); color: var(--primary); }
-        .slot.blocked { background: #ffebee; border-left: 5px solid var(--danger); color: var(--danger); font-weight: bold; align-items: center; }
-        .slot.manual { background: #fff3e0; border-left: 5px solid var(--warning); color: #d35400; }
+
+        .slot:active {
+            transform: scale(0.98);
+        }
+
+        .slot.empty {
+            background: white;
+            border: 2px dashed #ddd;
+            color: #aaa;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+        }
+
+        .slot.client {
+            background: #e3f2fd;
+            border-left: 5px solid var(--accent);
+            color: var(--primary);
+        }
+
+        .slot.blocked {
+            background: #ffebee;
+            border-left: 5px solid var(--danger);
+            color: var(--danger);
+            font-weight: bold;
+            align-items: center;
+        }
+
+        .slot.manual {
+            background: #fff3e0;
+            border-left: 5px solid var(--warning);
+            color: #d35400;
+        }
 
         /* Deposito Info nello slot */
-        .slot-service { font-style: italic; color: #555; margin: 2px 0; }
-        .slot-tyres { font-weight: bold; color: #d35400; background: rgba(255,255,255,0.5); padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; margin-top: 4px; }
-        .slot-delete-btn { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 50%; background: var(--danger); color: white; border: none; font-size: 0.75rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: opacity 0.2s, transform 0.2s; z-index: 10; }
-        .slot-delete-btn:hover { opacity: 1; transform: scale(1.15); }
+        .slot-service {
+            font-style: italic;
+            color: #555;
+            margin: 2px 0;
+        }
+
+        .slot-tyres {
+            font-weight: bold;
+            color: #d35400;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+
+        .slot-delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--danger);
+            color: white;
+            border: none;
+            font-size: 0.75rem;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+
+        .slot-delete-btn:hover {
+            opacity: 1;
+            transform: scale(1.15);
+        }
 
         /* --- RICERCA MAGAZZINO (SPLIT) --- */
-        .search-split { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        @media (max-width: 600px) { .search-split { grid-template-columns: 1fr; } }
-        .search-container { position: relative; }
-        .search-container input { width: 100%; padding: 12px 12px 12px 35px; border: none; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 0.9rem; }
-        .search-container i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #aaa; }
+        .search-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .search-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 12px 12px 12px 35px;
+            border: none;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
 
         /* --- MAGAZZINO & LISTE --- */
-        .fab-add { position: fixed; bottom: 90px; right: 20px; width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 4px 15px rgba(44, 165, 255, 0.4); border: none; cursor: pointer; z-index: 800; }
-        
-        .item-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border-left: 5px solid transparent; display: flex; justify-content: space-between; align-items: center; }
-        .item-card.magazzino { border-left-color: var(--warning); }
-        
-        .item-info h4 { margin: 0 0 5px 0; color: var(--primary); font-size: 1rem; text-transform: capitalize; }
-        .item-info p { margin: 0; color: #666; font-size: 0.85rem; }
-        .item-actions { display: flex; gap: 10px; }
-        .action-btn { width: 35px; height: 35px; border-radius: 8px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; }
-        .btn-edit { background: var(--accent); }
-        .btn-del { background: #ff7675; }
+        .fab-add {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 15px rgba(44, 165, 255, 0.4);
+            border: none;
+            cursor: pointer;
+            z-index: 800;
+        }
+
+        .item-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+            border-left: 5px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-card.magazzino {
+            border-left-color: var(--warning);
+        }
+
+        .item-info h4 {
+            margin: 0 0 5px 0;
+            color: var(--primary);
+            font-size: 1rem;
+            text-transform: capitalize;
+        }
+
+        .item-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-edit {
+            background: var(--accent);
+        }
+
+        .btn-del {
+            background: #ff7675;
+        }
 
         /* --- TABELLA CLIENTI --- */
-        .table-responsive { overflow-x: auto; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th { background: #f8f9fa; color: #666; padding: 12px; text-align: left; font-size: 0.8rem; text-transform: uppercase; }
-        td { padding: 12px; border-top: 1px solid #eee; font-size: 0.9rem; color: #333; }
-        
-        /* LOGIN */
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .login-box input { padding: 15px; border-radius: 5px; border: none; margin-bottom: 10px; width: 250px; text-align: center; }
-        .login-box button { padding: 12px 30px; background: var(--accent); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; width: 250px; }
-        
-        /* FIX Z-INDEX */
-        .swal2-container { z-index: 100000 !important; }
+        .table-responsive {
+            overflow-x: auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
 
-        #date-trigger { position: absolute; opacity: 0; width: 1px; height: 1px; bottom: 0; left: 0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #666;
+            padding: 12px;
+            text-align: left;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 12px;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        /* LOGIN */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .login-box input {
+            padding: 15px;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 10px;
+            width: 250px;
+            text-align: center;
+        }
+
+        .login-box button {
+            padding: 12px 30px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 250px;
+        }
+
+        /* FIX Z-INDEX */
+        .swal2-container {
+            z-index: 100000 !important;
+        }
+
+        #date-trigger {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+            bottom: 0;
+            left: 0;
+        }
 
         /* ↓ MODIFICA: stili dropdown brand custom */
-        .brand-wrap { position: relative; width: 100%; margin: 4px 0; }
+        .brand-wrap {
+            position: relative;
+            width: 100%;
+            margin: 4px 0;
+        }
+
         .brand-dropdown {
-            position: absolute; top: 100%; left: 0;
-            background: white; border: 1px solid #ddd; border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 999999;
-            max-height: 180px; overflow-y: auto; display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            z-index: 999999;
+            max-height: 180px;
+            overflow-y: auto;
+            display: none;
         }
-        .brand-dropdown.open { display: block; }
+
+        .brand-dropdown.open {
+            display: block;
+        }
+
         .brand-option {
-            padding: 10px 14px; font-size: 0.9rem; cursor: pointer;
-            color: #333; transition: background 0.1s;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #333;
+            transition: background 0.1s;
         }
-        .brand-option:hover, .brand-option.active { background: #e8f4ff; color: var(--primary); font-weight: 600; }
+
+        .brand-option:hover,
+        .brand-option.active {
+            background: #e8f4ff;
+            color: var(--primary);
+            font-weight: 600;
+        }
     </style>
 </head>
+
 <body>
 
     <div id="login-overlay">
@@ -129,16 +510,18 @@
         <div class="date-nav">
             <button class="nav-arrow" onclick="changeDay(-1)"><i class="fas fa-chevron-left"></i></button>
             <div class="date-display" onclick="document.getElementById('date-trigger').showPicker()">
-                <span id="day-name" style="display:block; font-size:0.75rem; color:#888; text-transform:uppercase;">OGGI</span>
+                <span id="day-name"
+                    style="display:block; font-size:0.75rem; color:#888; text-transform:uppercase;">OGGI</span>
                 <strong id="full-date" style="font-size:1.1rem; color:var(--primary);">...</strong>
                 <input type="date" id="date-trigger" onchange="changeDate(this.value)">
             </div>
-            <button class="nav-arrow" onclick="toggleBloccoGiornata()" style="color:var(--danger);" title="Blocca/Sblocca Intera Giornata">
+            <button class="nav-arrow" onclick="toggleBloccoGiornata()" style="color:var(--danger);"
+                title="Blocca/Sblocca Intera Giornata">
                 <i class="fas fa-lock"></i>
             </button>
             <button class="nav-arrow" onclick="changeDay(1)"><i class="fas fa-chevron-right"></i></button>
         </div>
-        
+
         <div id="timeline-container">
             <p style="text-align:center; margin-top:50px;">Caricamento...</p>
         </div>
@@ -167,7 +550,8 @@
     <div id="view-clienti" class="view-section">
         <div class="search-container" style="margin-bottom:20px;">
             <i class="fas fa-search"></i>
-            <input type="text" id="search-cli" placeholder="Cerca Cliente per nome o email..." onkeyup="filtraClienti()">
+            <input type="text" id="search-cli" placeholder="Cerca Cliente per nome o email..."
+                onkeyup="filtraClienti()">
         </div>
         <div class="table-responsive">
             <table id="clienti-table">
@@ -209,6 +593,173 @@
             appId: "1:434776513276:web:52370fb79c6ab043319579"
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+        // ========== GOOGLE SHEETS BACKUP ==========
+        const SHEETS_CONFIG = {
+            spreadsheetId: '1vK-nfAgqn4MlDrLUMEFU_BMCT0tNzydp1Voc1Ld1yUw',
+            sheetName: 'Magazzino',
+            clientEmail: 'magazzino-backup@dr-pneumatici-app.iam.gserviceaccount.com',
+            privateKey: `\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCuZu/wPly7mUkn\nnVybl7UCwEOF37zKwEYaQ4L1qWdnNZJea9Mji5NYmjM6Tfdq43Z2YpD8sMSSLWGq\nfBl6aFTawxTTuI4+xsPCOI5k+UlqhmbOqoP0kesCuSWvNDPpRDvEObMDHuTw0SLC\nEQdc+F3evkRFhSuXec3pi8wrrdNtyciYZeLyYqVC44McpoRxW+1kLHIWU61+ydHW\nfakl0F6O3Ej88ERsQLCvTSitvEhCl/QumQZsEC/RvvZb+UZNqJW7rKMWLDTmyWBf\nH8yksysNSLkO0emMCa9WvHTaYx8h5allDRamDr/8mIvJjD3Siv9hTeRXgo2FsCdS\nPSlkWfk9AgMBAAECggEAE3b8r5keO3fjwM6g3+LCOqDfyGjMxupHyLWhP67dEhla\nETzCj3SMCPcI4aiDBUSG27arjPBjuBblkCQSqeVMFzBvuiOeiKYhgiNSzTU/euqu\nPcGtQZYpnx+v84qFgrLxYri34JDJp5EH6pYA9uDnhS1CLGotD9Zx42+NZZCciOOt\n27dagwAds5JkxJa2kcscBmoJzqYQ14Qxa1GZSrhFQR8joyHZMTBZK9gSBFXPT40f\nM8pF5wa6UsHLoYmDcrt8z2YVFkjtjRUfWihItu8qHo5XoZZ2D1yZpELjLDgU5Z/9\nnryi38S08lDF4TqsX+VKjfn7pZRfJh6IkKCtS8BtsQKBgQDTw6Wfz07ZLdUiWE1x\ncfp7ygLhbKhPOkA5KsaenOs0u5BsAsmdn/LzObFroJiJyc63TkzixctjA7aLMupj\ns56I8sRWwhCE9u0iFatxVITt4mQR5CZdUAaWbCVX6JewdVNrLBlQZ90c0vHa1Cx6\nzCrn4eDpacOBNpr/1J6jEPygOQKBgQDS1U24WovWLEHVBEY0SAhBVnjdcahyNtoG\nuYEEMFP9EMIdnFqvBYIRhSyoFxpXeYX+8tSKgEFbnmCsJE+L2SCNg9c4GpG+meWS\npGUDnZpC6ss8uEFWllJDz/1zzujGX9KLi3QPKqlg+pZbfaz7wX3XuGKdveJxCUnN\nw+OCpztZJQKBgQCuQ0NJdoSxTfklkTrxj1UMh1nFffAneo0dPilCn2ki9PLNH6Ig\nV17Lbv+kzPyZ7vtwdzvoJdLQQV73v8eIkmh01CpkJsEHWlgcA28ZDO9y/ylQW8qC\nYXd6U7aLV/l0Gaiy+hA+zan0rVafuJh92QO53HSEQCfFblUxEBwXnsP1aQKBgQDI\nlKKCd7J+KlDfZlecOcOQ1cHbe9xz/PdkWmwCHjBpnN3w6eXkiWr7XCXmLUSkYDs5\nGLFYqziC/6SdYVZEiGfN+tZwy+ZI3YVqA/kOfYxbiaGdvPZ8eDr/xQsueHVA9b0L\ngbsDCuVmHEGb/W7rfWRKLWO1Cwg53kpW9rymeo+d+QKBgQCnKxqjsW7CthsVabDg\nkVuJhVrL26qlPVUwT0P3FuAOxLUPUgwBTKLdlN0Ctc9U9U0Pu6vwPQiq9HZQV711\n1ObTEXARq9yDP2Fo84zaqWopCBJYcaRRbkyK7IrNgfvV+9HYDagXfcP0J055qnAG\ncy0gNHQki99Rna592vqs4I+mZg==\n`
+        };
+
+        async function getGoogleToken() {
+            const now = Math.floor(Date.now() / 1000);
+            const header = { alg: 'RS256', typ: 'JWT' };
+            const payload = {
+                iss: SHEETS_CONFIG.clientEmail,
+                scope: 'https://www.googleapis.com/auth/spreadsheets',
+                aud: 'https://oauth2.googleapis.com/token',
+                exp: now + 3600,
+                iat: now
+            };
+            const b64 = obj => btoa(unescape(encodeURIComponent(JSON.stringify(obj)))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+            const unsigned = `${b64(header)}.${b64(payload)}`;
+            const key = await crypto.subtle.importKey('pkcs8', pemToBuffer(SHEETS_CONFIG.privateKey), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+            const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(unsigned));
+            const b64sig = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+            const jwt = `${unsigned}.${b64sig}`;
+            const res = await fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`
+            });
+            const data = await res.json();
+            return data.access_token;
+        }
+
+        function pemToBuffer(pem) {
+            const b64 = pem.replace(/-----[^-]+-----/g, '').replace(/\s/g, '');
+            const bin = atob(b64);
+            const buf = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+            return buf.buffer;
+        }
+
+        async function syncToSheet(dati) {
+            try {
+                const token = await getGoogleToken();
+                const sheetId = SHEETS_CONFIG.spreadsheetId;
+                const sheetName = SHEETS_CONFIG.sheetName;
+
+                // Leggi tutte le righe esistenti per trovare la targa
+                const getRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}!A:C`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const getData = await getRes.json();
+                const rows = getData.values || [];
+
+                const timestamp = new Date().toLocaleString('it-IT');
+                const nuovaRiga = [
+                    '', // N° verrà calcolato
+                    timestamp,
+                    dati.targa,
+                    dati.nome,
+                    dati.cognome,
+                    dati.misura,
+                    dati.misura2 || '',
+                    dati.brand,
+                    dati.stagione,
+                    dati.quantita,
+                    dati.note || ''
+                ];
+
+                // Cerca se la targa esiste già (colonna C = indice 2), partendo da riga 2 (skip header)
+                let targaRowIndex = -1;
+                for (let i = 1; i < rows.length; i++) {
+                    if ((rows[i][2] || '').toUpperCase() === dati.targa.toUpperCase()) {
+                        targaRowIndex = i + 1; // indice 1-based per Sheets
+                        break;
+                    }
+                }
+
+                if (targaRowIndex > 0) {
+                    // Aggiorna la riga esistente mantenendo il N° originale
+                    const nOriginal = rows[targaRowIndex - 1][0] || '';
+                    nuovaRiga[0] = nOriginal;
+                    nuovaRiga[1] = timestamp; // aggiorna il timestamp
+                    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}!A${targaRowIndex}:K${targaRowIndex}?valueInputOption=RAW`, {
+                        method: 'PUT',
+                        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ values: [nuovaRiga] })
+                    });
+                } else {
+                    // Nuova riga: calcola N° progressivo
+                    const n = rows.length; // header è riga 1, quindi rows.length è il prossimo numero
+                    nuovaRiga[0] = n;
+                    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}!A:K:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ values: [nuovaRiga] })
+                    });
+                }
+            } catch (e) {
+                console.warn('Backup Sheet non riuscito:', e);
+            }
+        }
+        // ========== FINE GOOGLE SHEETS BACKUP ==========
+
+        async function syncEliminazioneToSheet(targa) {
+    try {
+        const token = await getGoogleToken();
+        const sheetId = SHEETS_CONFIG.spreadsheetId;
+        const sheetName = SHEETS_CONFIG.sheetName;
+
+        // Trova la riga della targa
+        const getRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}!A:C`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const getData = await getRes.json();
+        const rows = getData.values || [];
+
+        let targaRowIndex = -1;
+        for (let i = 1; i < rows.length; i++) {
+            if ((rows[i][2] || '').toUpperCase() === targa.toUpperCase()) {
+                targaRowIndex = i + 1; // 1-based
+                break;
+            }
+        }
+
+        if (targaRowIndex < 0) return;
+
+        const timestamp = new Date().toLocaleString('it-IT');
+
+        // Scrive ELIMINATO e timestamp nelle colonne L e M della riga trovata
+        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}!L${targaRowIndex}:M${targaRowIndex}?valueInputOption=RAW`, {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ values: [['ELIMINATO', timestamp]] })
+        });
+
+        // Colora tutta la riga in rosso
+        await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                requests: [{
+                    repeatCell: {
+                        range: {
+                            sheetId: 0,
+                            startRowIndex: targaRowIndex - 1,
+                            endRowIndex: targaRowIndex,
+                            startColumnIndex: 0,
+                            endColumnIndex: 13
+                        },
+                        cell: {
+                            userEnteredFormat: {
+                                backgroundColor: { red: 1, green: 0.8, blue: 0.8 },
+                                textFormat: { foregroundColor: { red: 0.8, green: 0, blue: 0 }, bold: true }
+                            }
+                        },
+                        fields: 'userEnteredFormat.backgroundColor,userEnteredFormat.textFormat'
+                    }
+                }]
+            })
+        });
+
+    } catch (e) {
+        console.warn('Backup eliminazione non riuscito:', e);
+    }
+}
+
         const db = firebase.firestore();
 
         const cap = s => (s || '').replace(/\S+/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
@@ -282,7 +833,7 @@
                 dropdown.style.left = inputEl.offsetLeft + 'px';
 
                 dropdown.querySelectorAll('.brand-option').forEach(opt => {
-                    opt.addEventListener('mousedown', function(e) {
+                    opt.addEventListener('mousedown', function (e) {
                         e.preventDefault();
                         inputEl.value = this.dataset.value;
                         dropdown.classList.remove('open');
@@ -302,11 +853,11 @@
                 }
             }
 
-            inputEl.addEventListener('input', function() {
+            inputEl.addEventListener('input', function () {
                 renderOptions(this.value);
             });
 
-            inputEl.addEventListener('keydown', function(e) {
+            inputEl.addEventListener('keydown', function (e) {
                 const opts = dropdown.querySelectorAll('.brand-option');
                 if (!dropdown.classList.contains('open')) return;
 
@@ -330,7 +881,7 @@
                 }
             });
 
-            inputEl.addEventListener('blur', function() {
+            inputEl.addEventListener('blur', function () {
                 // piccolo delay per permettere il click sull'opzione
                 setTimeout(() => {
                     dropdown.classList.remove('open');
@@ -340,7 +891,7 @@
         }
 
         let currentDate = new Date();
-        
+
         async function sha256(message) {
             const msgBuffer = new TextEncoder().encode(message);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -353,7 +904,7 @@
             const correctHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
             try {
                 const inputHash = await sha256(inputPass);
-                if(inputHash === correctHash) {
+                if (inputHash === correctHash) {
                     document.getElementById('login-overlay').style.display = 'none';
                     goToToday();
                 } else {
@@ -369,14 +920,14 @@
         }
 
         function formattaMisuraLive(inputElement) {
-            inputElement.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, ''); 
+            inputElement.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, '');
                 let formatted = '';
                 if (value.length > 0) formatted += value.substring(0, 3);
                 if (value.length > 3) formatted += '/' + value.substring(3, 5);
                 if (value.length > 5) formatted += ' R' + value.substring(5, 7);
                 e.target.value = formatted;
-                if(inputElement.id.includes('search')) filtraMagazzino();
+                if (inputElement.id.includes('search')) filtraMagazzino();
             });
         }
         document.addEventListener('DOMContentLoaded', () => { formattaMisuraLive(document.getElementById('search-mag-mis')); });
@@ -384,11 +935,11 @@
         function switchTab(tab) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-'+tab).classList.add('active');
+            document.getElementById('view-' + tab).classList.add('active');
             event.currentTarget.classList.add('active');
             document.getElementById('page-title').innerText = tab.toUpperCase();
-            if(tab === 'magazzino') caricaMagazzino();
-            if(tab === 'clienti') caricaClienti();
+            if (tab === 'magazzino') caricaMagazzino();
+            if (tab === 'clienti') caricaClienti();
         }
 
         function goToToday() {
@@ -405,23 +956,23 @@
         function changeDate(iso) {
             currentDate = new Date(iso);
             document.getElementById('full-date').innerText = currentDate.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'short' });
-            document.getElementById('day-name').innerText = currentDate.toLocaleDateString('it-IT', {weekday:'long'});
+            document.getElementById('day-name').innerText = currentDate.toLocaleDateString('it-IT', { weekday: 'long' });
             caricaAgenda(iso);
         }
 
         function caricaAgenda(iso) {
             const container = document.getElementById('timeline-container');
             container.innerHTML = '<p style="text-align:center; margin-top:20px;">Caricamento...</p>';
-            
-            if(currentDate.getDay() === 0) { container.innerHTML = "<h3 style='text-align:center; margin-top:50px; color:red;'>DOMENICA CHIUSO</h3>"; return; }
-            
-            let orari = (currentDate.getDay() === 6) 
+
+            if (currentDate.getDay() === 0) { container.innerHTML = "<h3 style='text-align:center; margin-top:50px; color:red;'>DOMENICA CHIUSO</h3>"; return; }
+
+            let orari = (currentDate.getDay() === 6)
                 ? ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00"]
                 : ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"];
 
             db.collection("prenotazioni").where("data", "==", iso).onSnapshot(async snap => {
                 let list = [];
-                snap.forEach(doc => list.push({id: doc.id, ...doc.data()}));
+                snap.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
 
                 let depMap = {};
                 const depSnap = await db.collection("deposito").get();
@@ -441,18 +992,18 @@
                         let classe = p.tipo === 'blocco' ? 'blocked' : (p.tipo === 'manuale' ? 'manual' : 'client');
                         let contenuto = "";
 
-                        if(p.tipo === 'blocco') {
+                        if (p.tipo === 'blocco') {
                             contenuto = '<i class="fas fa-lock"></i> CHIUSO';
                         } else {
                             let gommeInfo = "";
-                            if(p.deposito) {
+                            if (p.deposito) {
                                 const keyTarga = p.targa ? 'targa:' + p.targa.toUpperCase() : null;
-                                const keyNome  = (p.nome + " " + p.cognome).toLowerCase().trim();
-                                const gomme    = (keyTarga && depMap[keyTarga]) || depMap[keyNome];
-                                if(gomme) {
+                                const keyNome = (p.nome + " " + p.cognome).toLowerCase().trim();
+                                const gomme = (keyTarga && depMap[keyTarga]) || depMap[keyNome];
+                                if (gomme) {
                                     const targaLabel = gomme.targa ? ` • 🚗 ${gomme.targa}` : '';
-                                    const qtyLabel   = gomme.quantita ? ` (n.${gomme.quantita})` : '';
-                                    const noteLabel  = gomme.note ? `<div style="font-size:0.7rem; color:#777; font-style:italic; margin-top:2px;">📝 ${gomme.note}</div>` : '';
+                                    const qtyLabel = gomme.quantita ? ` (n.${gomme.quantita})` : '';
+                                    const noteLabel = gomme.note ? `<div style="font-size:0.7rem; color:#777; font-style:italic; margin-top:2px;">📝 ${gomme.note}</div>` : '';
                                     const misuraLabel = gomme.misura2 ? `${gomme.misura} + ${gomme.misura2}` : gomme.misura;
                                     gommeInfo = `<div class="slot-tyres"><i class="fas fa-truck-loading"></i> ${misuraLabel}${qtyLabel}${targaLabel}</div>${noteLabel}`;
                                 } else {
@@ -466,9 +1017,9 @@
                                 ${gommeInfo}
                             `;
                         }
-                        
-                        let tooltip = `Cliente: ${cap(p.nome)} ${cap(p.cognome)}\nTel: ${p.telefono}\nEmail: ${p.email}\nServizio: ${p.servizio}\nDeposito: ${p.deposito?'SI':'NO'}`;
-                        if(p.tipo==='blocco') tooltip = "Orario Bloccato";
+
+                        let tooltip = `Cliente: ${cap(p.nome)} ${cap(p.cognome)}\nTel: ${p.telefono}\nEmail: ${p.email}\nServizio: ${p.servizio}\nDeposito: ${p.deposito ? 'SI' : 'NO'}`;
+                        if (p.tipo === 'blocco') tooltip = "Orario Bloccato";
 
                         slotsHtml += `<div class="slot ${classe}" title="${tooltip}" style="position:relative;">
                             ${contenuto}
@@ -476,7 +1027,7 @@
                         </div>`;
                     });
 
-                    for(let i=0; i < (2 - slots.length); i++) {
+                    for (let i = 0; i < (2 - slots.length); i++) {
                         slotsHtml += `<div class="slot empty" onclick="gestisciVuoto('${iso}', '${ora}')"><i class="fas fa-plus"></i></div>`;
                     }
 
@@ -493,7 +1044,7 @@
                 confirmButtonText: 'Prenota (Sito)', denyButtonText: 'Blocca Orario', cancelButtonText: 'Chiudi',
                 confirmButtonColor: '#2ca5ff', denyButtonColor: '#e74c3c'
             }).then((result) => {
-                if (result.isConfirmed) { window.open('prenotazione.html', '_blank'); } 
+                if (result.isConfirmed) { window.open('prenotazione.html', '_blank'); }
                 else if (result.isDenied) {
                     db.collection("prenotazioni").add({
                         data: data, ora: ora, tipo: 'blocco', nome: 'BLOCCO', cognome: 'ADMIN', servizio: 'Non disp.',
@@ -504,12 +1055,12 @@
         }
 
         function gestisciOccupato(id, tipo, cognome) {
-            let msg = tipo==='blocco' ? "Sbloccare questo orario?" : `Eliminare prenotazione di ${cognome}?`;
+            let msg = tipo === 'blocco' ? "Sbloccare questo orario?" : `Eliminare prenotazione di ${cognome}?`;
             Swal.fire({
                 title: 'Attenzione', text: msg, icon: 'warning',
                 showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Sì, elimina'
             }).then((res) => {
-                if(res.isConfirmed) {
+                if (res.isConfirmed) {
                     db.collection("prenotazioni").doc(id).delete();
                     Swal.fire('Eliminato', '', 'success');
                 }
@@ -541,29 +1092,29 @@
                 showDenyButton: true, showCancelButton: true,
                 confirmButtonText: '🔒 BLOCCA', denyButtonText: '🔓 SBLOCCA', cancelButtonText: 'Annulla'
             }).then((res) => {
-                if(res.isConfirmed) { 
+                if (res.isConfirmed) {
                     const day = new Date(iso).getDay();
-                    let orari = (day===6) ? ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00"] : ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30"];
+                    let orari = (day === 6) ? ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00"] : ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"];
                     db.collection("prenotazioni").where("data", "==", iso).get().then(snap => {
                         let batch = db.batch();
                         let counts = {};
-                        snap.forEach(doc => { let h = doc.data().ora; counts[h] = (counts[h]||0)+1; });
+                        snap.forEach(doc => { let h = doc.data().ora; counts[h] = (counts[h] || 0) + 1; });
                         orari.forEach(ora => {
                             let presenti = counts[ora] || 0;
-                            for(let i=presenti; i<2; i++) {
+                            for (let i = presenti; i < 2; i++) {
                                 let ref = db.collection("prenotazioni").doc();
                                 batch.set(ref, { data: iso, ora: ora, tipo: 'blocco', nome: 'CHIUSO', cognome: 'GIORNATA', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
                             }
                         });
                         batch.commit().then(() => Swal.fire('Giornata Bloccata', '', 'success'));
                     });
-                } else if (res.isDenied) { 
+                } else if (res.isDenied) {
                     db.collection("prenotazioni").where("data", "==", iso).where("tipo", "==", "blocco").get()
-                    .then(snap => {
-                        let batch = db.batch();
-                        snap.forEach(doc => batch.delete(doc.ref));
-                        return batch.commit();
-                    }).then(() => Swal.fire('Sbloccato', '', 'success'));
+                        .then(snap => {
+                            let batch = db.batch();
+                            snap.forEach(doc => batch.delete(doc.ref));
+                            return batch.commit();
+                        }).then(() => Swal.fire('Sbloccato', '', 'success'));
                 }
             });
         }
@@ -573,7 +1124,7 @@
             document.getElementById('magazzino-list').innerHTML = '<p style="text-align:center;">Caricamento...</p>';
             db.collection("deposito").orderBy("timestamp", "desc").get().then(snap => {
                 allMagazzino = [];
-                snap.forEach(d => allMagazzino.push({id: d.id, ...d.data()}));
+                snap.forEach(d => allMagazzino.push({ id: d.id, ...d.data() }));
                 renderMagazzino(allMagazzino);
             });
         }
@@ -647,9 +1198,9 @@
 
                         <select id="sw-stagione" class="swal2-input">
                             <option value="">Seleziona stagione *</option>
-                            <option value="Estive" ${item && item.stagione==='Estive'?'selected':''}>Estive</option>
-                            <option value="Invernali" ${item && item.stagione==='Invernali'?'selected':''}>Invernali</option>
-                            <option value="4 Stagioni" ${item && item.stagione==='4 Stagioni'?'selected':''}>4 Stagioni</option>
+                            <option value="Estive" ${item && item.stagione === 'Estive' ? 'selected' : ''}>Estive</option>
+                            <option value="Invernali" ${item && item.stagione === 'Invernali' ? 'selected' : ''}>Invernali</option>
+                            <option value="4 Stagioni" ${item && item.stagione === '4 Stagioni' ? 'selected' : ''}>4 Stagioni</option>
                         </select>
                         <input id="sw-qty" type="number" min="1" class="swal2-input" placeholder="Quantità *" value="${item ? item.quantita : 4}">
                         <input id="sw-note" class="swal2-input" placeholder="Note (facoltativo)" value="${item && item.note ? item.note : ''}">
@@ -659,19 +1210,19 @@
                         formattaMisuraLive(document.getElementById('sw-misura'));
                         formattaMisuraLive(document.getElementById('sw-misura2'));
                         const targaInp = document.getElementById('sw-targa');
-                        targaInp.addEventListener('input', function() { this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(); });
+                        targaInp.addEventListener('input', function () { this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(); });
                         ['sw-nome', 'sw-cognome'].forEach(id => {
-                            document.getElementById(id).addEventListener('blur', function() {
+                            document.getElementById(id).addEventListener('blur', function () {
                                 this.value = cap(this.value.trim());
                             });
                         });
 
-                        document.getElementById('btn-add-misura2').addEventListener('click', function() {
+                        document.getElementById('btn-add-misura2').addEventListener('click', function () {
                             document.getElementById('row-misura2').style.display = 'flex';
                             this.style.display = 'none';
                         });
 
-                        document.getElementById('btn-rm-misura2').addEventListener('click', function() {
+                        document.getElementById('btn-rm-misura2').addEventListener('click', function () {
                             const val = document.getElementById('sw-misura2').value.trim();
                             if (val === '') {
                                 document.getElementById('row-misura2').style.display = 'none';
@@ -683,22 +1234,22 @@
                         initBrandDropdown(document.getElementById('sw-brand'));
                     },
                     preConfirm: () => {
-                        const targa   = document.getElementById('sw-targa').value.replace(/\s+/g, '').toUpperCase();
-                        const nome    = cap(document.getElementById('sw-nome').value.trim());
+                        const targa = document.getElementById('sw-targa').value.replace(/\s+/g, '').toUpperCase();
+                        const nome = cap(document.getElementById('sw-nome').value.trim());
                         const cognome = cap(document.getElementById('sw-cognome').value.trim());
-                        const misura  = document.getElementById('sw-misura').value.trim();
+                        const misura = document.getElementById('sw-misura').value.trim();
                         const misura2Row = document.getElementById('row-misura2');
                         const misura2 = misura2Row.style.display !== 'none' ? document.getElementById('sw-misura2').value.trim() : '';
-                        const brand   = document.getElementById('sw-brand').value.trim();
-                        const stagione= document.getElementById('sw-stagione').value;
-                        const qty     = document.getElementById('sw-qty').value;
+                        const brand = document.getElementById('sw-brand').value.trim();
+                        const stagione = document.getElementById('sw-stagione').value;
+                        const qty = document.getElementById('sw-qty').value;
 
                         const mancanti = [];
-                        if (!targa)    mancanti.push('Targa');
-                        if (!nome)     mancanti.push('Nome');
-                        if (!cognome)  mancanti.push('Cognome');
-                        if (!misura)   mancanti.push('Misura');
-                        if (!brand)    mancanti.push('Marca');
+                        if (!targa) mancanti.push('Targa');
+                        if (!nome) mancanti.push('Nome');
+                        if (!cognome) mancanti.push('Cognome');
+                        if (!misura) mancanti.push('Misura');
+                        if (!brand) mancanti.push('Marca');
                         if (!stagione) mancanti.push('Stagione');
                         if (!qty || qty < 1) mancanti.push('Quantità');
 
@@ -758,7 +1309,11 @@
                 let promise = isEdit
                     ? db.collection("deposito").doc(item.id).update(formValues)
                     : db.collection("deposito").add(formValues);
-                promise.then(() => { Swal.fire('Salvato!', '', 'success'); caricaMagazzino(); });
+                promise.then(() => {
+                    Swal.fire('Salvato!', '', 'success');
+                    caricaMagazzino();
+                    syncToSheet(formValues); // backup su Google Sheet
+                });
                 return;
             }
         }
@@ -768,7 +1323,7 @@
             document.getElementById('clienti-tbody').innerHTML = '<tr><td colspan="4" style="text-align:center;">Caricamento...</td></tr>';
             db.collection("clienti").orderBy("cognome").get().then(snap => {
                 allClienti = [];
-                snap.forEach(d => allClienti.push({id: d.id, ...d.data()}));
+                snap.forEach(d => allClienti.push({ id: d.id, ...d.data() }));
                 renderClienti(allClienti);
             });
         }
@@ -786,7 +1341,7 @@
         }
         function filtraClienti() {
             const t = document.getElementById('search-cli').value.toLowerCase();
-            const res = allClienti.filter(c => (c.nome+" "+c.cognome).toLowerCase().includes(t) || c.email.includes(t));
+            const res = allClienti.filter(c => (c.nome + " " + c.cognome).toLowerCase().includes(t) || c.email.includes(t));
             renderClienti(res);
         }
         async function modificaCliente(cEncoded) {
@@ -803,9 +1358,25 @@
         }
         function eliminaItem(coll, id) {
             Swal.fire({ title: 'Sei sicuro?', text: "Irreversibile!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Elimina', cancelButtonText: 'Annulla' }).then((result) => {
-                if (result.isConfirmed) { db.collection(coll).doc(id).delete().then(() => { Swal.fire('Eliminato!', '', 'success'); if(coll==='deposito') caricaMagazzino(); if(coll==='clienti') caricaClienti(); }); }
+                if (result.isConfirmed) {
+                    // se è un deposito, recupera la targa prima di eliminare
+                    if (coll === 'deposito') {
+                        const item = allMagazzino.find(i => i.id === id);
+                        db.collection(coll).doc(id).delete().then(() => {
+                            Swal.fire('Eliminato!', '', 'success');
+                            caricaMagazzino();
+                            if (item && item.targa) syncEliminazioneToSheet(item.targa);
+                        });
+                    } else {
+                        db.collection(coll).doc(id).delete().then(() => {
+                            Swal.fire('Eliminato!', '', 'success');
+                            caricaClienti();
+                        });
+                    }
+                }
             });
         }
     </script>
 </body>
+
 </html>
